@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>画像設置ガイド</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; }
+        .guide-box { background: #f9f9f9; padding: 15px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #ff6b9d; }
+        .step { background: white; padding: 15px; margin: 10px 0; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .check-area { background: #e8f5e8; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .error-area { background: #ffe8e8; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        img { max-width: 180px; height: 200px; object-fit: cover; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <h1>🖼️ キャラクター画像設置ガイド</h1>
+    
+    <div class="guide-box">
+        <h3>📋 必要な作業</h3>
+        <p>チャットで送信いただいたセーラー服の女の子の画像を、ゲームで使用できるよう設置します。</p>
+    </div>
+
+    <div class="step">
+        <h3>ステップ 1: 画像の保存</h3>
+        <ol>
+            <li>チャット画面で送信された画像を右クリック</li>
+            <li>「名前を付けて画像を保存」を選択</li>
+            <li>ファイル名を <strong>sakura.png</strong> に変更</li>
+            <li>保存場所: <code>ai_chat_game/assets/images/sakura.png</code></li>
+        </ol>
+    </div>
+
+    <div class="step">
+        <h3>ステップ 2: 動作確認</h3>
+        <ol>
+            <li><code>index.html</code> をブラウザで開く</li>
+            <li>キャラクター画像が表示されることを確認</li>
+            <li>表示されない場合は、ファイル名とパスを再確認</li>
+        </ol>
+    </div>
+
+    <div class="check-area">
+        <h3>✅ 現在の画像状態チェック</h3>
+        <p><strong>期待される画像:</strong></p>
+        <img src="assets/images/sakura.png" alt="さくらちゃん" 
+             onload="document.getElementById('imageStatus').innerHTML='✅ 画像読み込み成功！ゲームで使用されます。';"
+             onerror="document.getElementById('imageStatus').innerHTML='❌ 画像が見つかりません。上記手順で設置してください。';">
+        <p id="imageStatus">🔄 画像読み込み中...</p>
+    </div>
+
+    <div class="step">
+        <h3>ステップ 3: ゲーム開始</h3>
+        <ol>
+            <li>画像設置完了後、<code>index.html</code> でゲーム開始</li>
+            <li>さくらちゃんと楽しいチャットを！</li>
+        </ol>
+        <p><a href="index.html" style="background:#ff6b9d; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;">🎮 ゲームを開始する</a></p>
+    </div>
+
+    <div class="error-area">
+        <h3>❓ トラブルシューティング</h3>
+        <ul>
+            <li><strong>画像が表示されない</strong> → ファイル名が正確に <code>sakura.png</code> になっているか確認</li>
+            <li><strong>フォルダが見つからない</strong> → <code>assets/images/</code> フォルダが存在するか確認</li>
+            <li><strong>画像が歪んで見える</strong> → CSS で自動調整されるので問題ありません</li>
+        </ul>
+    </div>
+
+    <div class="guide-box">
+        <h3>💡 その他の画像について</h3>
+        <ul>
+            <li>推奨サイズ: 180×200px程度</li>
+            <li>対応形式: PNG, JPG, WebP</li>
+            <li>透明背景があるPNGがおすすめ</li>
+        </ul>
+    </div>
+
+    <hr>
+    <p><small>🔗 <a href="test.html">動作テストページ</a> | <a href="README.md">詳細ドキュメント</a></small></p>
+</body>
+</html>
