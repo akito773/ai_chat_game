@@ -47,7 +47,7 @@ class LocationManager {
                     romanticBonus: 1.5
                 },
                 timeOfDay: ['morning', 'afternoon', 'evening'],
-                unlockCondition: { intimacy: 25 } // 親密度25で解放
+                unlockCondition: { intimacy: 5 } // 親密度5で解放（テスト用に緩和）
             },
             
             park: {
@@ -63,7 +63,7 @@ class LocationManager {
                     peaceBonus: 1.4
                 },
                 timeOfDay: ['morning', 'afternoon', 'evening'],
-                unlockCondition: { intimacy: 10 },
+                unlockCondition: { intimacy: 3 },
                 specialEvents: ['sakura_viewing', 'sunset_confession']
             },
             
