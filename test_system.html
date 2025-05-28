@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>チャットRPG - システムテスト</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .test-header {
+            background: linear-gradient(135deg, #ff6b9d 0%, #ff8fb3 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .test-section {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .test-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            border-left: 4px solid #ff6b9d;
+            padding-left: 10px;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .status-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+        }
+
+        .status-label {
+            font-weight: bold;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .status-value {
+            font-size: 1.2em;
+            color: #333;
+            margin-top: 5px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #ff6b9d 0%, #ff8fb3 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 157, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        }
+
+        .log-area {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+
+        .character-selector {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+
+        .character-btn {
+            padding: 8px 15px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .character-btn.active {
+            border-color: #ff6b9d;
+            background: #ff6b9d;
+            color: white;
+        }
+
+        .test-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+
+        .location-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .location-item {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .location-item:hover {
+            border-color: #ff6b9d;
+        }
+
+        .location-item.current {
+            border-color: #ff6b9d;
+            background: rgba(255, 107, 157, 0.1);
+        }
+
+        .chat-test {
+            margin: 15px 0;
+        }
+
+        .chat-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .success {
+            color: #155724;
+            background: #d4edda;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>🎮 チャットRPG システムテスト</h1>
+            <p>基盤システムの動作確認</p>
+        </div>
+
+        <!-- システム状態 -->
+        <div class="test-section">
+            <h3>🏗️ システム初期化状態</h3>
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="status-label">GameEngine</div>
+                    <div class="status-value" id="gameEngineStatus">未初期化</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">SaveManager</div>
+                    <div class="status-value" id="saveManagerStatus">未初期化</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">MemoryManager</div>
+                    <div class="status-value" id="memoryManagerStatus">未初期化</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">LocationManager</div>
+                    <div class="status-value" id="locationManagerStatus">未初期化</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">RelationshipManager</div>
+                    <div class="status-value" id="relationshipManagerStatus">未初期化</div>
+                </div>
+            </div>
+            <div class="test-controls">
+                <button class="btn" onclick="initializeSystem()">🚀 システム初期化</button>
+                <button class="btn btn-secondary" onclick="resetSystem()">🔄 リセット</button>
+                <button class="btn btn-secondary" onclick="debugSystem()">🐛 デバッグ情報</button>
+            </div>
+        </div>
+
+        <!-- キャラクター管理テスト -->
+        <div class="test-section">
+            <h3>👥 キャラクター管理テスト</h3>
+            <div class="character-selector" id="characterSelector">
+                <!-- JavaScriptで動的生成 -->
+            </div>
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="status-label">選択中キャラ</div>
+                    <div class="status-value" id="currentCharacter">未選択</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">親密度</div>
+                    <div class="status-value" id="intimacyLevel">0</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">関係性</div>
+                    <div class="status-value" id="relationshipLevel">初対面</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 場所管理テスト -->
+        <div class="test-section">
+            <h3>📍 場所管理テスト</h3>
+            <div class="status-item">
+                <div class="status-label">現在地</div>
+                <div class="status-value" id="currentLocation">自分の部屋</div>
+            </div>
+            <div class="location-grid" id="locationGrid">
+                <!-- JavaScriptで動的生成 -->
+            </div>
+        </div>
+
+        <!-- 会話テスト -->
+        <div class="test-section">
+            <h3>💬 会話・記憶テスト</h3>
+            <div class="chat-test">
+                <input type="text" class="chat-input" id="testMessage" placeholder="テスト用メッセージを入力...">
+                <button class="btn" onclick="sendTestMessage()">💬 送信</button>
+                <button class="btn btn-secondary" onclick="checkMemory()">🧠 記憶確認</button>
+            </div>
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="status-label">会話回数</div>
+                    <div class="status-value" id="conversationCount">0</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">記憶データ</div>
+                    <div class="status-value" id="memoryData">なし</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- セーブ/ロードテスト -->
+        <div class="test-section">
+            <h3>💾 セーブ/ロードテスト</h3>
+            <div class="test-controls">
+                <button class="btn" onclick="saveTest()">💾 テストセーブ</button>
+                <button class="btn" onclick="loadTest()">📁 テストロード</button>
+                <button class="btn btn-secondary" onclick="clearSave()">🗑️ セーブクリア</button>
+            </div>
+            <div class="status-item">
+                <div class="status-label">セーブ状態</div>
+                <div class="status-value" id="saveStatus">未保存</div>
+            </div>
+        </div>
+
+        <!-- ログ表示 -->
+        <div class="test-section">
+            <h3>📜 システムログ</h3>
+            <div class="log-area" id="systemLog"></div>
+            <button class="btn btn-secondary" onclick="clearLog()">🗑️ ログクリア</button>
+        </div>
+
+        <!-- エラー/成功メッセージ -->
+        <div id="messageArea"></div>
+    </div>
+
+    <!-- JavaScript読み込み -->
+    <script src="js/data/characters.js"></script>
+    <script src="js/data/stories.js"></script>
+    <script src="js/core/game-engine.js"></script>
+    <script src="js/modules/save-manager.js"></script>
+    <script src="js/modules/memory-manager.js"></script>
+    <script src="js/modules/location-manager.js"></script>
+    <script src="js/modules/relationship-manager.js"></script>
+
+    <script>
+        // グローバル変数
+        let gameEngine = null;
+        let currentCharacterId = 'sakura';
+        let testLog = [];
+
+        // ログ出力関数
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            testLog.push(logEntry);
+            
+            const logArea = document.getElementById('systemLog');
+            logArea.textContent = testLog.slice(-50).join('\n'); // 最新50件
+            logArea.scrollTop = logArea.scrollHeight;
+            
+            console.log(logEntry);
+        }
+
+        // エラー/成功メッセージ表示
+        function showMessage(message, type = 'info') {
+            const messageArea = document.getElementById('messageArea');
+            const div = document.createElement('div');
+            div.className = type === 'error' ? 'error' : 'success';
+            div.textContent = message;
+            messageArea.appendChild(div);
+            
+            setTimeout(() => {
+                div.remove();
+            }, 5000);
+        }
+
+        // システム初期化
+        async function initializeSystem() {
+            try {
+                addLog('🚀 システム初期化開始');
+                
+                // GameEngine初期化
+                gameEngine = new GameEngine();
+                await gameEngine.initialize();
+                
+                updateSystemStatus();
+                initializeCharacterSelector();
+                initializeLocationGrid();
+                
+                addLog('✅ システム初期化完了');
+                showMessage('システムが正常に初期化されました！', 'success');
+                
+            } catch (error) {
+                addLog(`❌ 初期化エラー: ${error.message}`, 'error');
+                showMessage(`初期化エラー: ${error.message}`, 'error');
+            }
+        }
+
+        // システム状態更新
+        function updateSystemStatus() {
+            const statuses = {
+                gameEngineStatus: gameEngine ? '✅ 正常' : '❌ エラー',
+                saveManagerStatus: gameEngine?.modules.savemanager ? '✅ 正常' : '❌ エラー',
+                memoryManagerStatus: gameEngine?.modules.memorymanager ? '✅ 正常' : '❌ エラー',
+                locationManagerStatus: gameEngine?.modules.locationmanager ? '✅ 正常' : '❌ エラー',
+                relationshipManagerStatus: gameEngine?.modules.relationshipmanager ? '✅ 正常' : '❌ エラー'
+            };
+            
+            for (const [id, status] of Object.entries(statuses)) {
+                document.getElementById(id).textContent = status;
+            }
+        }
+
+        // キャラクター選択器初期化
+        function initializeCharacterSelector() {
+            const selector = document.getElementById('characterSelector');
+            selector.innerHTML = '';
+            
+            for (const [characterId, character] of Object.entries(window.CharacterData)) {
+                const btn = document.createElement('div');
+                btn.className = `character-btn ${characterId === currentCharacterId ? 'active' : ''}`;
+                btn.textContent = `${character.emoji} ${character.name}`;
+                btn.onclick = () => selectCharacter(characterId);
+                selector.appendChild(btn);
+            }
+        }
+
+        // 場所グリッド初期化
+        function initializeLocationGrid() {
+            const grid = document.getElementById('locationGrid');
+            const locations = gameEngine?.modules.locationmanager?.locations || {};
+            
+            grid.innerHTML = '';
+            
+            for (const [locationId, location] of Object.entries(locations)) {
+                const item = document.createElement('div');
+                item.className = `location-item ${locationId === 'home' ? 'current' : ''}`;
+                item.textContent = location.name;
+                item.onclick = () => moveToLocation(locationId);
+                grid.appendChild(item);
+            }
+        }
+
+        // キャラクター選択
+        function selectCharacter(characterId) {
+            currentCharacterId = characterId;
+            addLog(`👤 キャラクター選択: ${window.CharacterData[characterId].name}`);
+            
+            // UI更新
+            initializeCharacterSelector();
+            updateCharacterStatus();
+        }
+
+        // キャラクター状態更新
+        function updateCharacterStatus() {
+            const character = window.CharacterData[currentCharacterId];
+            const relationship = gameEngine?.modules.relationshipmanager?.getRelationship(currentCharacterId);
+            
+            document.getElementById('currentCharacter').textContent = character.name;
+            document.getElementById('intimacyLevel').textContent = relationship?.intimacy || 0;
+            document.getElementById('relationshipLevel').textContent = relationship?.intimacyName || '初対面';
+        }
+
+        // 場所移動
+        async function moveToLocation(locationId) {
+            try {
+                const result = await gameEngine.moveToLocation(locationId);
+                if (result.success) {
+                    addLog(`📍 場所移動: ${result.location.name}`);
+                    document.getElementById('currentLocation').textContent = result.location.name;
+                    
+                    // UI更新
+                    document.querySelectorAll('.location-item').forEach(item => {
+                        item.classList.remove('current');
+                    });
+                    event.target.classList.add('current');
+                } else {
+                    addLog(`❌ 移動失敗: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                addLog(`❌ 移動エラー: ${error.message}`, 'error');
+            }
+        }
+
+        // テストメッセージ送信
+        async function sendTestMessage() {
+            const input = document.getElementById('testMessage');
+            const message = input.value.trim();
+            
+            if (!message || !gameEngine) return;
+            
+            try {
+                addLog(`💬 送信: ${message}`);
+                
+                // メモリマネージャーに記録
+                gameEngine.modules.memorymanager.addConversation(message, true, currentCharacterId);
+                
+                // 関係性更新
+                const result = gameEngine.modules.relationshipmanager.updateIntimacyFromConversation(currentCharacterId, message);
+                
+                addLog(`💕 親密度変化: ${result.oldIntimacy} → ${result.newIntimacy}`);
+                
+                if (result.levelUp) {
+                    addLog(`🎉 関係性レベルアップ: ${result.newLevel.name}`);
+                }
+                
+                updateCharacterStatus();
+                updateConversationCount();
+                
+                input.value = '';
+                
+            } catch (error) {
+                addLog(`❌ メッセージ送信エラー: ${error.message}`, 'error');
+            }
+        }
+
+        // 記憶確認
+        function checkMemory() {
+            try {
+                const memoryInfo = gameEngine.modules.memorymanager.getMemoryDebugInfo();
+                addLog(`🧠 記憶情報: ${JSON.stringify(memoryInfo)}`);
+                
+                document.getElementById('memoryData').textContent = 
+                    `短期:${memoryInfo.shortTermCount} 長期:${memoryInfo.longTermCount}`;
+                    
+            } catch (error) {
+                addLog(`❌ 記憶確認エラー: ${error.message}`, 'error');
+            }
+        }
+
+        // 会話回数更新
+        function updateConversationCount() {
+            const relationship = gameEngine?.modules.relationshipmanager?.getRelationship(currentCharacterId);
+            document.getElementById('conversationCount').textContent = relationship?.totalInteractions || 0;
+        }
+
+        // セーブテスト
+        async function saveTest() {
+            try {
+                const result = await gameEngine.modules.savemanager.saveGame('test');
+                if (result.success) {
+                    addLog('💾 テストセーブ完了');
+                    document.getElementById('saveStatus').textContent = '保存済み';
+                    showMessage('セーブが完了しました！', 'success');
+                } else {
+                    addLog(`❌ セーブエラー: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                addLog(`❌ セーブエラー: ${error.message}`, 'error');
+            }
+        }
+
+        // ロードテスト
+        async function loadTest() {
+            try {
+                const data = await gameEngine.modules.savemanager.loadGame('test');
+                if (data) {
+                    addLog('📁 テストロード完了');
+                    showMessage('ロードが完了しました！', 'success');
+                } else {
+                    addLog('❌ ロードデータなし', 'error');
+                }
+            } catch (error) {
+                addLog(`❌ ロードエラー: ${error.message}`, 'error');
+            }
+        }
+
+        // セーブクリア
+        async function clearSave() {
+            try {
+                await gameEngine.modules.savemanager.clearSave();
+                addLog('🗑️ セーブデータクリア完了');
+                document.getElementById('saveStatus').textContent = '未保存';
+                showMessage('セーブデータをクリアしました', 'success');
+            } catch (error) {
+                addLog(`❌ クリアエラー: ${error.message}`, 'error');
+            }
+        }
+
+        // システムリセット
+        function resetSystem() {
+            gameEngine = null;
+            currentCharacterId = 'sakura';
+            
+            updateSystemStatus();
+            document.getElementById('currentCharacter').textContent = '未選択';
+            document.getElementById('intimacyLevel').textContent = '0';
+            document.getElementById('relationshipLevel').textContent = '初対面';
+            
+            addLog('🔄 システムリセット完了');
+            showMessage('システムをリセットしました', 'success');
+        }
+
+        // デバッグ情報
+        function debugSystem() {
+            if (gameEngine) {
+                gameEngine.debug();
+                gameEngine.modules.relationshipmanager?.debugRelationshipInfo();
+                gameEngine.modules.locationmanager?.debugLocationInfo();
+                addLog('🐛 デバッグ情報をコンソールに出力');
+            }
+        }
+
+        // ログクリア
+        function clearLog() {
+            testLog = [];
+            document.getElementById('systemLog').textContent = '';
+            addLog('🗑️ ログクリア');
+        }
+
+        // Enterキーでメッセージ送信
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('testMessage').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendTestMessage();
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
