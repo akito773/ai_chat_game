@@ -606,3 +606,64 @@ body {
 #change-character-btn:hover {
     background: #ff4585;
 }
+
+/* RPGゲーム要素のスタイル */
+.character-card.locked {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: #f8f9fa;
+    border-color: #dee2e6;
+}
+
+.character-card.locked:hover {
+    transform: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-color: #dee2e6;
+}
+
+.character-card.locked .character-avatar {
+    background: #e9ecef;
+    color: #6c757d;
+}
+
+.character-card.locked .character-name-small,
+.character-card.locked .character-desc-small {
+    color: #6c757d;
+}
+
+/* モーダルオーバーレイ */
+.character-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(2px);
+}
+
+.character-selector {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}

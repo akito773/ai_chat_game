@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIチャットRPG - 新キャラクター追加版</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* RPGゲーム要素用の追加スタイル */
+        .game-status {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .status-item {
+            text-align: center;
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .status-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+        
+        .status-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .level-bar, .intimacy-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 4px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        
+        .level-progress, .intimacy-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .mission-panel {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .mission-title {
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 10px;
+        }
+        
+        .mission-item {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 4px solid #28a745;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .mission-item.completed {
+            border-left-color: #6c757d;
+            opacity: 0.7;
+        }
+        
+        .achievement-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .achievement-notification.show {
+            transform: translateX(0);
+        }
+        
+        .character-unlock {
+            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+        
+        .unlock-message {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+        
+        .new-character-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- ゲームステータス表示 -->
+        <div class="game-status">
+            <h3>🎮 ゲームステータス</h3>
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="status-label">プレイヤーレベル</div>
+                    <div class="status-value" id="playerLevel">1</div>
+                    <div class="level-bar">
+                        <div class="level-progress" id="levelProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">総経験値</div>
+                    <div class="status-value" id="totalExp">0</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">親密度</div>
+                    <div class="status-value" id="intimacyLevel">友達</div>
+                    <div class="intimacy-bar">
+                        <div class="intimacy-progress" id="intimacyProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">会話数</div>
+                    <div class="status-value" id="chatCount">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ミッション表示 -->
+        <div class="mission-panel">
+            <div class="mission-title">📋 現在のミッション</div>
+            <div id="missionList">
+                <div class="mission-item" data-mission="first-chat">
+                    初回会話: キャラクターと最初の会話をしよう (報酬: 10 EXP)
+                </div>
+                <div class="mission-item" data-mission="5-messages">
+                    会話上手: 5回メッセージを送ろう (報酬: 25 EXP)
+                </div>
+                <div class="mission-item" data-mission="character-unlock">
+                    新たな出会い: 新キャラクターを解放しよう (報酬: 50 EXP)
+                </div>
+            </div>
+        </div>
+
+        <!-- キャラクター解放通知 -->
+        <div class="character-unlock" id="characterUnlock" style="display: none;">
+            <div class="unlock-message">🎉 新しいキャラクターが解放されました！</div>
+            <div class="new-character-name" id="newCharacterName">ミサキ</div>
+        </div>
+
+        <!-- キャラクター選択セクション -->
+        <div id="characterSelector">
+            <!-- JavaScript で動的生成 -->
+        </div>
+        
+        <!-- キャラクターセクション -->
+        <div class="character-section">
+            <button class="character-select-btn" onclick="toggleCharacterSelector()">
+                キャラクター変更
+            </button>
+            
+            <div class="character-image">
+                <img src="assets/images/sakura.png" alt="さくらちゃん" id="characterImg" 
+                     onerror="this.style.display='none'; document.getElementById('characterPlaceholder').style.display='flex'">
+                <div id="characterPlaceholder" class="character-placeholder" style="display: none;">👧</div>
+            </div>
+            <div class="character-name" id="characterName">さくらちゃん</div>
+            <div class="character-description" id="characterDescription">元気いっぱいの学園アイドル♪</div>
+        </div>
+        
+        <!-- チャットセクション -->
+        <div class="chat-section">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message ai">
+                    <div class="message-bubble">
+                        こんにちは〜！私、さくらです♪<br>
+                        チャットRPGの世界へようこそ！<br>
+                        会話を通じて経験値を積んで、新しい仲間を解放しましょう〜✨
+                    </div>
+                </div>
+            </div>
+            
+            <div class="typing-indicator" id="typingIndicator">
+                <span class="typing-dots">入力中</span>
+            </div>
+            
+            <div class="input-section">
+                <input type="text" class="message-input" id="messageInput" placeholder="メッセージを入力...">
+                <button class="send-button" id="sendButton">送信</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 達成通知 -->
+    <div class="achievement-notification" id="achievementNotification">
+        <div id="achievementText">🎉 ミッション達成！</div>
+    </div>
+
+    <!-- JavaScript読み込み -->
+    <script src="js/config.js"></script>
+    <script src="js/character-manager-rpg.js"></script>
+    <script src="js/game-system.js"></script>
+    <script>
+        // キャラクター選択UIの表示/非表示
+        function toggleCharacterSelector() {
+            console.log('🎯 toggleCharacterSelector呼び出し');
+            if (window.characterManager) {
+                characterManager.showCharacterSelector();
+            } else {
+                console.error('❌ characterManagerが見つかりません');
+            }
+        }
+        
+        // 初期化時はキャラクター選択UIを非表示
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('characterSelector').style.display = 'none';
+            
+            // ゲームシステムの初期化
+            if (window.GameSystem) {
+                window.gameSystem = new GameSystem();
+            }
+            
+            // キャラクターマネージャーの初期化完了を待つ
+            const checkCharacterManager = () => {
+                if (window.characterManager && window.characterManager.getCurrentCharacter()) {
+                    // 初期UIを更新
+                    window.characterManager.updateUI();
+                } else {
+                    setTimeout(checkCharacterManager, 100);
+                }
+            };
+            checkCharacterManager();
+        });
+        
+        // ローカルモードのチェック
+        if (localStorage.getItem('useLocalMode') === 'true') {
+            window.CONFIG.useAPI = false;
+            console.log('💻 ローカルモード有効 - APIなしで動作します');
+        }
+    </script>
+    <script src="js/chat-rpg.js"></script>
+    <script>
+        // グローバル変数として chatGame を登録
+        document.addEventListener('DOMContentLoaded', () => {
+            // ChatGame インスタンスをグローバルに設定
+            window.chatGame = new ChatGameRPG();
+        });
+    </script>
+</body>
+</html>
