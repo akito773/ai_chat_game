@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 トラブルシューティング診断</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .step { background: #f9f9f9; padding: 20px; margin: 15px 0; border-radius: 10px; border-left: 5px solid #007bff; }
+        .success { border-left-color: #28a745; background: #d4edda; }
+        .warning { border-left-color: #ffc107; background: #fff3cd; }
+        .error { border-left-color: #dc3545; background: #f8d7da; }
+        .button { display: inline-block; background: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 10px 5px; cursor: pointer; border: none; }
+        .button:hover { background: #0056b3; }
+        .code { background: #f8f9fa; padding: 10px; border-radius: 5px; font-family: monospace; margin: 10px 0; }
+        .diagnostic-result { margin: 15px 0; padding: 15px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 AIチャットゲーム トラブルシューティング</h1>
+        <p>API接続エラーの解決手順を案内します。</p>
+
+        <div class="step">
+            <h3>📋 現在の状況</h3>
+            <p>✅ 基本機能テスト: 正常</p>
+            <p>❌ API接続テスト: Failed to fetch</p>
+            <p><strong>診断:</strong> PHPサーバーが起動していない可能性が高い</p>
+        </div>
+
+        <div class="step">
+            <h3>🚀 解決手順 1: サーバー起動</h3>
+            <p><strong>推奨方法:</strong></p>
+            <div class="code">start_server.bat をダブルクリック</div>
+            <p>または以下のコマンドをコマンドプロンプトで実行:</p>
+            <div class="code">
+                cd C:\Users\akar0\Desktop\ai_chat_game<br>
+                php -S localhost:8000
+            </div>
+            <button class="button" onclick="checkServerStatus()">サーバー状況を確認</button>
+            <div id="serverStatus" class="diagnostic-result"></div>
+        </div>
+
+        <div class="step">
+            <h3>💡 解決手順 2: PHPが無い場合の対処</h3>
+            <p>PHPが無い場合は、以下の選択肢があります:</p>
+            <ol>
+                <li><strong>XAMPP をインストール</strong> (推奨)
+                    <ul>
+                        <li><a href="https://www.apachefriends.org/" target="_blank">XAMPP公式サイト</a>からダウンロード</li>
+                        <li>インストール後、XAMPPコントロールパネルでApacheを起動</li>
+                        <li>ゲームフォルダをhtdocsにコピー</li>
+                    </ul>
+                </li>
+                <li><strong>ローカル応答モードで使用</strong>
+                    <div class="code">js/config.js で useAPI: false に変更</div>
+                    <p>この場合、GPT-4o miniは使えませんが、予め用意された応答でチャットできます。</p>
+                </li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h3>🔧 解決手順 3: 簡易診断実行</h3>
+            <button class="button" onclick="runDiagnostics()">自動診断を実行</button>
+            <div id="diagnosticsResult" class="diagnostic-result"></div>
+        </div>
+
+        <div class="step">
+            <h3>🎮 解決手順 4: すぐに試したい場合</h3>
+            <p>API無しでも動作する設定に変更:</p>
+            <button class="button" onclick="enableLocalMode()">ローカルモードを有効化</button>
+            <p>その後、<a href="index.html" class="button">ゲーム開始</a></p>
+            <div id="localModeResult" class="diagnostic-result"></div>
+        </div>
+
+        <div class="step warning">
+            <h3>⚠️ よくある問題と対処法</h3>
+            <ul>
+                <li><strong>ポート8000が使用中:</strong> start_server.batが自動で8001を使用</li>
+                <li><strong>ファイアウォールブロック:</strong> Windowsファイアウォールでブロックされる場合あり</li>
+                <li><strong>権限エラー:</strong> 管理者権限でコマンドプロンプトを実行</li>
+                <li><strong>文字化け:</strong> ブラウザで文字エンコードをUTF-8に設定</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        async function checkServerStatus() {
+            const resultDiv = document.getElementById('serverStatus');
+            resultDiv.innerHTML = '🔍 サーバー状況確認中...';
+            
+            try {
+                // ローカルサーバーへの接続テスト
+                const response = await fetch('/');
+                if (response.ok) {
+                    resultDiv.innerHTML = '<div class="success">✅ サーバー起動中！ <a href="test.html">APIテストへ</a></div>';
+                } else {
+                    resultDiv.innerHTML = '<div class="warning">⚠️ サーバーは起動中ですが、応答に問題があります</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error">❌ サーバーが起動していません<br>💡 start_server.bat をダブルクリックして起動してください</div>';
+            }
+        }
+
+        async function runDiagnostics() {
+            const resultDiv = document.getElementById('diagnosticsResult');
+            resultDiv.innerHTML = '🔍 診断実行中...';
+            
+            let diagnostics = '自動診断結果:\n\n';
+            
+            // 1. 基本機能チェック
+            try {
+                new Date();
+                diagnostics += '✅ JavaScript基本機能: OK\n';
+            } catch (e) {
+                diagnostics += '❌ JavaScript基本機能: エラー\n';
+            }
+            
+            // 2. Fetch API チェック
+            if (typeof fetch !== 'undefined') {
+                diagnostics += '✅ Fetch API: 使用可能\n';
+            } else {
+                diagnostics += '❌ Fetch API: 使用不可\n';
+            }
+            
+            // 3. 設定ファイルチェック
+            try {
+                if (typeof window.CONFIG !== 'undefined') {
+                    diagnostics += '✅ 設定ファイル: 読み込み済み\n';
+                    diagnostics += `   API使用: ${window.CONFIG.useAPI ? '有効' : '無効'}\n`;
+                } else {
+                    diagnostics += '❌ 設定ファイル: 読み込みエラー\n';
+                }
+            } catch (e) {
+                diagnostics += '❌ 設定ファイル: エラー\n';
+            }
+            
+            // 4. サーバー接続テスト
+            try {
+                const response = await fetch('api/chat.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: '診断テスト' })
+                });
+                diagnostics += '✅ API接続: 成功\n';
+            } catch (error) {
+                diagnostics += '❌ API接続: 失敗 (' + error.message + ')\n';
+                diagnostics += '💡 解決法: start_server.bat でサーバー起動\n';
+            }
+            
+            resultDiv.innerHTML = `<div class="code">${diagnostics}</div>`;
+        }
+
+        function enableLocalMode() {
+            const resultDiv = document.getElementById('localModeResult');
+            resultDiv.innerHTML = '⚙️ ローカルモード設定中...';
+            
+            // ローカルストレージに設定を保存（一時的）
+            try {
+                localStorage.setItem('useLocalMode', 'true');
+                resultDiv.innerHTML = '<div class="success">✅ ローカルモード有効化完了！<br>💡 これで API無しでもチャットできます。<br><a href="index.html" class="button">ゲーム開始</a></div>';
+            } catch (e) {
+                resultDiv.innerHTML = '<div class="warning">⚠️ 設定保存に失敗。手動で js/config.js の useAPI を false に変更してください。</div>';
+            }
+        }
+        
+        // ページ読み込み時に簡易診断
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(runDiagnostics, 1000);
+        });
+    </script>
+</body>
+</html>

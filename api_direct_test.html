@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>API直接テスト</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { background: #f8f9fa; padding: 20px; margin: 20px 0; border-radius: 10px; }
+        .result { background: #e9ecef; padding: 15px; margin: 10px 0; border-radius: 5px; font-family: monospace; }
+        .success { border-left: 5px solid #28a745; }
+        .error { border-left: 5px solid #dc3545; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        input { padding: 10px; width: 300px; border: 1px solid #ccc; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 API直接テスト</h1>
+    
+    <div class="test-section">
+        <h3>API呼び出しテスト</h3>
+        <input type="text" id="testMessage" placeholder="テストメッセージを入力" value="こんにちは">
+        <button onclick="testAPI()">APIテスト実行</button>
+        <button onclick="clearResults()">結果クリア</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        async function testAPI() {
+            const message = document.getElementById('testMessage').value;
+            const resultsDiv = document.getElementById('results');
+            
+            // リクエスト情報を表示
+            addResult('📤 リクエスト送信', {
+                url: 'api/chat.php',
+                method: 'POST',
+                message: message
+            }, 'info');
+            
+            try {
+                const response = await fetch('api/chat.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        character: 'sakura'
+                    })
+                });
+                
+                // レスポンス情報を表示
+                addResult('📥 レスポンス受信', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    contentType: response.headers.get('content-type')
+                }, 'info');
+                
+                // レスポンステキストを取得
+                const responseText = await response.text();
+                addResult('📄 レスポンステキスト', responseText, 'info');
+                
+                // レスポンスの検証
+                if (responseText.includes('<br />') || responseText.includes('<b>') || responseText.includes('Notice:') || responseText.includes('Warning:')) {
+                    addResult('❌ PHPエラー検出', 'レスポンスにPHPのエラーメッセージが含まれています', 'error');
+                    return;
+                }
+                
+                // JSONパース試行
+                try {
+                    const data = JSON.parse(responseText);
+                    addResult('✅ JSON解析成功', data, 'success');
+                    
+                    if (data.success) {
+                        addResult('🎉 API応答成功', {
+                            response: data.response,
+                            model: data.model,
+                            timestamp: data.timestamp
+                        }, 'success');
+                    } else {
+                        addResult('⚠️ API応答エラー', data.error, 'error');
+                    }
+                    
+                } catch (parseError) {
+                    addResult('❌ JSON解析失敗', {
+                        error: parseError.message,
+                        responseText: responseText
+                    }, 'error');
+                }
+                
+            } catch (error) {
+                addResult('❌ ネットワークエラー', error.message, 'error');
+            }
+        }
+        
+        function addResult(title, content, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result ${type}`;
+            
+            const titleEl = document.createElement('h4');
+            titleEl.textContent = title;
+            resultDiv.appendChild(titleEl);
+            
+            const contentEl = document.createElement('pre');
+            contentEl.textContent = typeof content === 'object' ? JSON.stringify(content, null, 2) : content;
+            resultDiv.appendChild(contentEl);
+            
+            resultsDiv.appendChild(resultDiv);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        // Enter キーでテスト実行
+        document.getElementById('testMessage').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                testAPI();
+            }
+        });
+    </script>
+</body>
+</html>

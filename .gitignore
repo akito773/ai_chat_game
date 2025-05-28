@@ -1,0 +1,42 @@
+# デプロイ時に除外するファイル
+# APIキーなどの機密情報を含むファイル
+
+# 開発用ファイル
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# エディタ/IDE設定
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 機密情報（本番環境用）
+api/config.php
+.env
+*.key
+
+# テスト用ファイル
+test.html
+start_server.bat
+
+# バックアップファイル
+*.bak
+*.backup
+# サーバー固有のファイル
+api/config.php
+api/config_local.php
+logs/*.log
+*.backup
+*.old
+test_*.php
+
+# 一時ファイル
+*.tmp
+*.temp
+
+# サーバー管理用ファイル
+multi_character.html.backup
+multi_character.html.old

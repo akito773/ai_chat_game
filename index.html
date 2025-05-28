@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIキャラクターチャット - さくらちゃん</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="character-section">
+            <div class="character-image">
+                <!-- キャラクター画像をここに配置 -->
+                <img src="assets/images/sakura.png" alt="さくらちゃん" id="characterImg" 
+                     onerror="this.style.display='none'; document.getElementById('characterPlaceholder').style.display='flex'">
+                <div id="characterPlaceholder" class="character-placeholder" style="display: none;">👧</div>
+            </div>
+            <div class="character-name">さくらちゃん</div>
+            <div class="character-description">元気いっぱいの学園アイドル♪</div>
+        </div>
+        
+        <div class="chat-section">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message ai">
+                    <div class="message-bubble">
+                        こんにちは〜！私、さくらです♪<br>
+                        今日はどんなお話しましょうか？何でも聞いてくださいね〜✨
+                    </div>
+                </div>
+            </div>
+            
+            <div class="typing-indicator" id="typingIndicator">
+                <span class="typing-dots">さくらちゃんが入力中</span>
+            </div>
+            
+            <div class="input-section">
+                <input type="text" class="message-input" id="messageInput" placeholder="メッセージを入力...">
+                <button class="send-button" id="sendButton">送信</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script>
+        // ローカルモードのチェック
+        if (localStorage.getItem('useLocalMode') === 'true') {
+            window.CONFIG.useAPI = false;
+            console.log('💻 ローカルモード有効 - APIなしで動作します');
+        }
+    </script>
+    <script src="js/chat.js"></script>
+</body>
+</html>

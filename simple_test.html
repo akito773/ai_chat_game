@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>接続テスト</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f8ff; }
+        .success { background: #d4edda; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .button { display: inline-block; background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <div class="success">
+        <h1>✅ 接続成功！</h1>
+        <p>Apache設定問題が解決されました。</p>
+    </div>
+    
+    <h2>🔗 テストリンク</h2>
+    <a href="index.html" class="button">メインゲーム</a>
+    <a href="test.html" class="button">APIテスト</a>
+    <a href="phptest.php" class="button">PHP動作確認</a>
+    
+    <script>
+        console.log('✅ JavaScript動作中');
+        document.body.innerHTML += '<p>✅ HTML/JavaScript 正常動作</p>';
+    </script>
+</body>
+</html>

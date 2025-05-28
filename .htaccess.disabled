@@ -1,0 +1,20 @@
+# AIチャットゲーム用 .htaccess 設定
+
+# 設定ファイルへの直接アクセス禁止
+<Files "config.php">
+    Require all denied
+</Files>
+
+# ディレクトリ一覧表示禁止
+Options -Indexes
+
+# JSONファイルは同一オリジンからのアクセスのみ許可
+<Files "*.json">
+    <RequireAll>
+        Require all granted
+        # 外部からの直接アクセスは禁止
+        SetEnvIf Referer "^https?://tk2-411-46534\.vs\.sakura\.ne\.jp" local_referer
+        SetEnvIf Referer "^https?://160\.16\.150\.38" local_referer
+        Require env local_referer
+    </RequireAll>
+</Files>

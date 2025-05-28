@@ -1,0 +1,9 @@
+# AIチャットゲーム用 .htaccess 設定
+
+# 設定ファイルへの直接アクセス禁止
+<Files "config.php">
+    Require all denied
+</Files>
+
+# ディレクトリ一覧表示禁止
+Options -Indexes

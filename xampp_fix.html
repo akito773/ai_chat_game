@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>XAMPP状態確認</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .check-item { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 8px; }
+        .success { border-left: 5px solid #28a745; }
+        .error { border-left: 5px solid #dc3545; }
+        .warning { border-left: 5px solid #ffc107; }
+        .code { background: #f1f3f4; padding: 10px; border-radius: 5px; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>🔧 XAMPP PHP設定チェック</h1>
+    
+    <div class="check-item error">
+        <h3>❌ 問題: PHPファイルがダウンロードされる</h3>
+        <p>これは以下の原因が考えられます：</p>
+        <ul>
+            <li>XAMPPのApacheが起動していない</li>
+            <li>PHPモジュールが有効化されていない</li>
+            <li>ポート設定の問題</li>
+        </ul>
+    </div>
+
+    <div class="check-item warning">
+        <h3>📋 チェックリスト</h3>
+        <ol>
+            <li><strong>XAMPPコントロールパネルを開く</strong></li>
+            <li><strong>Apacheの状態確認</strong>
+                <ul>
+                    <li>「Start」ボタンがある場合 → クリックして起動</li>
+                    <li>「Stop」ボタンがある場合 → 既に起動中</li>
+                    <li>赤い文字の場合 → ポート競合の可能性</li>
+                </ul>
+            </li>
+            <li><strong>ポート確認</strong>
+                <ul>
+                    <li>Apacheの「Config」→「Apache (httpd.conf)」をクリック</li>
+                    <li>「Listen 80」となっている行を「Listen 8080」に変更</li>
+                    <li>保存してApacheを再起動</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+
+    <div class="check-item">
+        <h3>🔄 修正手順</h3>
+        
+        <h4>方法1: 標準ポート80を使用</h4>
+        <div class="code">
+http://localhost/ai_chat_game/
+        </div>
+        
+        <h4>方法2: ポート8080を確実に設定</h4>
+        <p>以下のファイルを編集：</p>
+        <div class="code">
+C:\xampp2\apache\conf\httpd.conf
+        </div>
+        <p>変更箇所：</p>
+        <div class="code">
+Listen 80  →  Listen 8080
+ServerName localhost:80  →  ServerName localhost:8080
+        </div>
+    </div>
+
+    <div class="check-item success">
+        <h3>✅ 修正後のテスト</h3>
+        <p>以下のURLでアクセスしてください：</p>
+        <ul>
+            <li><a href="http://localhost/ai_chat_game/" target="_blank">http://localhost/ai_chat_game/</a> (ポート80)</li>
+            <li><a href="http://localhost:8080/ai_chat_game/" target="_blank">http://localhost:8080/ai_chat_game/</a> (ポート8080)</li>
+        </ul>
+    </div>
+
+    <div class="check-item">
+        <h3>🆘 緊急対応: 簡易テスト用ファイル</h3>
+        <p>まず、PHPが動作するか確認しましょう。</p>
+        <div class="code">
+&lt;?php echo "PHP is working! Current time: " . date('Y-m-d H:i:s'); ?&gt;
+        </div>
+        <p>このコードをメモ帳にコピーして、以下に保存：</p>
+        <div class="code">
+C:\xampp2\htdocs\test.php
+        </div>
+        <p>そして以下にアクセス：</p>
+        <div class="code">
+http://localhost/test.php<br>
+または<br>
+http://localhost:8080/test.php
+        </div>
+    </div>
+</body>
+</html>

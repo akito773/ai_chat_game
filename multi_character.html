@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIキャラクターチャット - マルチキャラクター対応</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+        
+    <div class="game-container">
+        <!-- キャラクター選択セクション -->
+        <div id="characterSelector">
+            <!-- JavaScript で動的生成 -->
+        </div>
+        
+        <!-- キャラクターセクション -->
+        <div class="character-section">
+            <button class="character-select-btn" onclick="toggleCharacterSelector()">
+                キャラクター変更
+            </button>
+            
+            <div class="character-image">
+                <img src="assets/images/sakura.png" alt="さくらちゃん" id="characterImg" 
+                     onerror="this.style.display='none'; document.getElementById('characterPlaceholder').style.display='flex'">
+                <div id="characterPlaceholder" class="character-placeholder" style="display: none;">👧</div>
+            </div>
+            <div class="character-name" id="characterName">さくらちゃん</div>
+            <div class="character-description" id="characterDescription">元気いっぱいの学園アイドル♪</div>
+        </div>
+        
+        <!-- チャットセクション -->
+        <div class="chat-section">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message ai">
+                    <div class="message-bubble">
+                        こんにちは〜！私、さくらです♪<br>
+                        今日はどんなお話しましょうか？何でも聞いてくださいね〜✨
+                    </div>
+                </div>
+            </div>
+            
+            <div class="typing-indicator" id="typingIndicator">
+                <span class="typing-dots">入力中</span>
+            </div>
+            
+            <div class="input-section">
+                <input type="text" class="message-input" id="messageInput" placeholder="メッセージを入力...">
+                <button class="send-button" id="sendButton">送信</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript読み込み -->
+    <script src="js/config.js"></script>
+    <script src="js/character-manager.js"></script>
+    <script>
+        // キャラクター選択UIの表示/非表示
+        function toggleCharacterSelector() {
+            console.log('🎯 toggleCharacterSelector呼び出し');
+            if (window.characterManager) {
+                characterManager.showCharacterSelector();
+            } else {
+                console.error('❌ characterManagerが見つかりません');
+            }
+        } else {
+                // キャラクター選択UIを生成・表示
+                if (window.characterManager) {
+                    selector.innerHTML = window.characterManager.createCharacterSelector();
+                    selector.style.display = 'block';
+                }
+            }
+        }
+        
+        // 初期化時はキャラクター選択UIを非表示
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('characterSelector').style.display = 'none';
+            
+            // キャラクターマネージャーの初期化完了を待つ
+            const checkCharacterManager = () => {
+                if (window.characterManager && window.characterManager.getCurrentCharacter()) {
+                    // 初期UIを更新
+                    window.characterManager.updateUI();
+                } else {
+                    setTimeout(checkCharacterManager, 100);
+                }
+            };
+            checkCharacterManager();
+        });
+        
+        // ローカルモードのチェック
+        if (localStorage.getItem('useLocalMode') === 'true') {
+            window.CONFIG.useAPI = false;
+            console.log('💻 ローカルモード有効 - APIなしで動作します');
+        }
+    </script>
+    <script src="js/chat.js"></script>
+    <script>
+        // グローバル変数として chatGame を登録
+        document.addEventListener('DOMContentLoaded', () => {
+            // ChatGame インスタンスをグローバルに設定
+            window.chatGame = new ChatGame();
+        });
+    </script>
+</body>
+</html>

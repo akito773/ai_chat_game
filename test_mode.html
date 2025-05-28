@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIチャットゲーム - テストモード</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .mode-indicator {
+            background: #ff6b6b;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .mode-selector {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            border: 2px solid #dee2e6;
+        }
+        .mode-button {
+            display: inline-block;
+            margin: 5px;
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+        }
+        .mode-button:hover {
+            background: #0056b3;
+        }
+        .mode-button.active {
+            background: #28a745;
+        }
+        .diagnostic-link {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .diagnostic-link a {
+            background: #ffc107;
+            color: #212529;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="mode-indicator" id="modeIndicator">
+            🔧 テストモード - APIエラー時の確認用
+        </div>
+        
+        <div class="mode-selector">
+            <h3>動作モード選択</h3>
+            <p>APIにエラーが出る場合は、まずローカルモードで動作確認してください。</p>
+            <button class="mode-button" onclick="setMode('local')" id="localBtn">
+                📱 ローカルモード (API不要)
+            </button>
+            <button class="mode-button" onclick="setMode('api')" id="apiBtn">
+                🌐 APIモード (要設定)
+            </button>
+        </div>
+        
+        <div class="diagnostic-link">
+            <a href="api_test.php" target="_blank">🔧 API診断ツール</a>
+        </div>
+        
+        <div class="character-section">
+            <div class="character-image">
+                <img src="assets/images/sakura.png" alt="さくらちゃん" id="characterImg" 
+                     onerror="this.style.display='none'; document.getElementById('characterPlaceholder').style.display='flex'">
+                <div id="characterPlaceholder" class="character-placeholder" style="display: none;">👧</div>
+            </div>
+            <div class="character-name">さくらちゃん</div>
+            <div class="character-description">元気いっぱいの学園アイドル♪</div>
+        </div>
+        
+        <div class="chat-section">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message ai">
+                    <div class="message-bubble">
+                        こんにちは〜！私、さくらです♪<br>
+                        現在テストモードで動作中です✨<br>
+                        何でもお話ししましょうね〜！
+                    </div>
+                </div>
+            </div>
+            
+            <div class="typing-indicator" id="typingIndicator">
+                <span class="typing-dots">さくらちゃんが入力中</span>
+            </div>
+            
+            <div class="input-section">
+                <input type="text" class="message-input" id="messageInput" placeholder="メッセージを入力...">
+                <button class="send-button" id="sendButton">送信</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script>
+        // テストモード用の設定
+        let currentMode = localStorage.getItem('testMode') || 'local';
+        
+        function setMode(mode) {
+            currentMode = mode;
+            localStorage.setItem('testMode', mode);
+            
+            if (mode === 'local') {
+                window.CONFIG.useAPI = false;
+                document.getElementById('modeIndicator').innerHTML = '📱 ローカルモード - APIなしで動作';
+                document.getElementById('modeIndicator').style.background = '#28a745';
+                document.getElementById('localBtn').classList.add('active');
+                document.getElementById('apiBtn').classList.remove('active');
+            } else {
+                window.CONFIG.useAPI = true;
+                document.getElementById('modeIndicator').innerHTML = '🌐 APIモード - OpenAI API使用';
+                document.getElementById('modeIndicator').style.background = '#007bff';
+                document.getElementById('apiBtn').classList.add('active');
+                document.getElementById('localBtn').classList.remove('active');
+            }
+            
+            // チャットをリセット
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = `
+                <div class="message ai">
+                    <div class="message-bubble">
+                        ${mode === 'local' ? 
+                            'ローカルモードで動作中です♪ APIなしでお話しできますよ〜✨' : 
+                            'APIモードで動作中です♪ OpenAI APIを使用してお話しします〜✨'
+                        }
+                    </div>
+                </div>
+            `;
+        }
+        
+        // 初期化
+        setMode(currentMode);
+        
+        // エラーハンドリング
+        window.addEventListener('error', (event) => {
+            console.error('エラーが発生しました:', event.error);
+            if (currentMode === 'api') {
+                alert('APIエラーが発生しました。ローカルモードに切り替えて動作確認してください。');
+                setMode('local');
+            }
+        });
+    </script>
+    <script src="js/chat.js"></script>
+    
+    <script>
+        // チャット初期化後に追加のセットアップ
+        document.addEventListener('DOMContentLoaded', () => {
+            // APIエラー時の自動切り替え
+            const originalFetch = window.fetch;
+            window.fetch = function(...args) {
+                return originalFetch.apply(this, args)
+                    .catch(error => {
+                        console.error('Fetch エラー:', error);
+                        if (currentMode === 'api') {
+                            alert('API接続に失敗しました。ローカルモードに切り替えます。');
+                            setMode('local');
+                        }
+                        throw error;
+                    });
+            };
+        });
+    </script>
+</body>
+</html>
