@@ -1,95 +1,9 @@
 # AIチャットゲーム用 .htaccess 設定
 
-# PHP設定
-php_value upload_max_filesize 2M
-php_value post_max_size 2M
-php_value memory_limit 128M
-php_value max_execution_time 30
-
-# セキュリティヘッダー
-<IfModule mod_headers.c>
-    Header always set X-Content-Type-Options nosniff
-    Header always set X-Frame-Options DENY
-    Header always set X-XSS-Protection "1; mode=block"
-    Header always set Referrer-Policy "strict-origin-when-cross-origin"
-    Header always set Content-Security-Policy "default-src 'self' https://api.openai.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://api.openai.com"
-</IfModule>
-
-# ログディレクトリへの直接アクセス禁止
-<Directory "logs">
-    Require all denied
-</Directory>
-
-# 設定ファイルへの直接アクセス禁止（バックアップ）
+# 設定ファイルへの直接アクセス禁止
 <Files "config.php">
-    <RequireAll>
-        Require all denied
-    </RequireAll>
-</Files>
-
-<Files "*.json">
-    <RequireAll>
-        Require local
-        Require ip 127.0.0.1
-    </RequireAll>
-</Files>
-
-# 隠しファイルへのアクセス禁止
-<FilesMatch "^\.">
     Require all denied
-</FilesMatch>
-
-# バックアップファイルへのアクセス禁止
-<FilesMatch "\.(bak|backup|old|tmp)$">
-    Require all denied
-</FilesMatch>
-
-# ファイル拡張子偽装対策
-<FilesMatch "\.php">
-    SetHandler application/x-httpd-php
-</FilesMatch>
-
-# GZIP圧縮（パフォーマンス向上）
-<IfModule mod_deflate.c>
-    AddOutputFilterByType DEFLATE text/plain
-    AddOutputFilterByType DEFLATE text/html
-    AddOutputFilterByType DEFLATE text/xml
-    AddOutputFilterByType DEFLATE text/css
-    AddOutputFilterByType DEFLATE application/xml
-    AddOutputFilterByType DEFLATE application/xhtml+xml
-    AddOutputFilterByType DEFLATE application/rss+xml
-    AddOutputFilterByType DEFLATE application/javascript
-    AddOutputFilterByType DEFLATE application/x-javascript
-    AddOutputFilterByType DEFLATE application/json
-</IfModule>
-
-# キャッシュ設定
-<IfModule mod_expires.c>
-    ExpiresActive on
-    ExpiresByType text/css "access plus 1 month"
-    ExpiresByType application/javascript "access plus 1 month"
-    ExpiresByType image/png "access plus 1 month"
-    ExpiresByType image/jpg "access plus 1 month"
-    ExpiresByType image/jpeg "access plus 1 month"
-    ExpiresByType text/html "access plus 1 hour"
-</IfModule>
-
-# HTTPS強制（本番環境用）
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    
-    # HTTP to HTTPS リダイレクト
-    RewriteCond %{HTTPS} off
-    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
-    
-    # www なしに統一（お好みで）
-    RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
-    RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
-</IfModule>
+</Files>
 
 # ディレクトリ一覧表示禁止
 Options -Indexes
-
-# サーバー情報の隠蔽
-ServerTokens Prod
-ServerSignature Off

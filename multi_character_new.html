@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AIキャラクターチャット - マルチキャラクター対応 [Git MCP テスト中]</title>
+    <title>AIキャラクターチャット - マルチキャラクター対応</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-        
     <div class="game-container">
         <!-- キャラクター選択セクション -->
-        <div id="characterSelector">
+        <div id="characterSelector" style="display: none;">
             <!-- JavaScript で動的生成 -->
         </div>
         
@@ -57,13 +56,12 @@
     <script>
         // キャラクター選択UIの表示/非表示
         function toggleCharacterSelector() {
-            console.log('🎯 toggleCharacterSelector呼び出し');
-            if (window.characterManager) {
-                characterManager.showCharacterSelector();
+            const selector = document.getElementById('characterSelector');
+            const isVisible = selector.style.display !== 'none';
+            
+            if (isVisible) {
+                selector.style.display = 'none';
             } else {
-                console.error('❌ characterManagerが見つかりません');
-            }
-        } else {
                 // キャラクター選択UIを生成・表示
                 if (window.characterManager) {
                     selector.innerHTML = window.characterManager.createCharacterSelector();

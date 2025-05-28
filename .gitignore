@@ -15,7 +15,6 @@ Thumbs.db
 
 # 機密情報（本番環境用）
 api/config.php
-api/config_local.php
 .env
 *.key
 
@@ -26,3 +25,18 @@ start_server.bat
 # バックアップファイル
 *.bak
 *.backup
+# サーバー固有のファイル
+api/config.php
+api/config_local.php
+logs/*.log
+*.backup
+*.old
+test_*.php
+
+# 一時ファイル
+*.tmp
+*.temp
+
+# サーバー管理用ファイル
+multi_character.html.backup
+multi_character.html.old

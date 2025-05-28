@@ -43,8 +43,6 @@ class CharacterManager {
     selectCharacter(characterId) {
         if (this.characters[characterId]) {
             this.currentCharacter = this.characters[characterId];
-            console.log('🎯 キャラクター選択実行:', characterId, '->', this.currentCharacter.name);
-            console.log('📱 updateUI呼び出し開始');
             this.updateUI();
             console.log('キャラクター選択:', this.currentCharacter);
         }
@@ -52,53 +50,28 @@ class CharacterManager {
 
     // UIを更新
     updateUI() {
-        if (!this.currentCharacter) {
-            console.log('❌ currentCharacterが設定されていません');
-            return;
+        if (!this.currentCharacter) return;
+
+        // キャラクター情報表示
+        const characterDisplay = document.getElementById('character-display');
+        if (characterDisplay) {
+            characterDisplay.innerHTML = `
+                <div class="character-image">
+                    <img src="${this.currentCharacter.image}" alt="${this.currentCharacter.name}"
+                         onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\\"font-size: 60px; color: ${this.currentCharacter.color};\\">${this.currentCharacter.emoji}</div>';">
+                </div>
+                <h2>${this.currentCharacter.name}</h2>
+                <p class="character-description">${this.currentCharacter.description}</p>
+            `;
         }
 
-        console.log('🔄 UI更新開始:', this.currentCharacter.name);
-
-        // 1. キャラクター画像を更新
-        const characterImg = document.getElementById('characterImg');
-        if (characterImg) {
-            console.log('✅ characterImg要素発見、画像更新中...');
-            characterImg.src = this.currentCharacter.image;
-            characterImg.alt = this.currentCharacter.name;
-            console.log('📸 画像パス更新:', this.currentCharacter.image);
-        } else {
-            console.log('❌ characterImg要素が見つかりません');
-        }
-
-        // 2. キャラクター名を更新
-        const characterName = document.querySelector('.character-name');
-        if (characterName) {
-            characterName.textContent = this.currentCharacter.name;
-            console.log('📝 名前更新:', this.currentCharacter.name);
-        } else {
-            console.log('❌ character-name要素が見つかりません');
-        }
-
-        // 3. キャラクター説明を更新
-        const characterDescription = document.querySelector('.character-description');
-        if (characterDescription) {
-            characterDescription.textContent = this.currentCharacter.description;
-            console.log('📝 説明更新:', this.currentCharacter.description);
-        } else {
-            console.log('❌ character-description要素が見つかりません');
-        }
-
-        // 4. テーマカラー変更
+        // テーマカラー変更
         document.documentElement.style.setProperty('--character-color', this.currentCharacter.color);
-        console.log('🎨 テーマカラー更新:', this.currentCharacter.color);
 
-        // 5. 挨拶メッセージ表示
+        // 挨拶メッセージ表示
         if (this.currentCharacter.greeting) {
             this.displayGreeting();
-            console.log('💬 挨拶メッセージ表示');
         }
-
-        console.log('✅ UI更新完了');
     }
 
     // 挨拶メッセージを表示
@@ -192,35 +165,51 @@ class CharacterManager {
 // グローバルインスタンス作成
 const characterManager = new CharacterManager();
 
-// グローバル関数として toggleCharacterSelector を定義
-function toggleCharacterSelector() {
-    console.log('🎯 toggleCharacterSelector呼び出し');
-    if (window.characterManager) {
-        characterManager.showCharacterSelector();
-    } else {
-        console.error('❌ characterManagerが見つかりません');
-    }
-}
-
-// windowオブジェクトにも設定
-window.characterManager = characterManager;
-window.toggleCharacterSelector = toggleCharacterSelector;
-
 // DOMが読み込まれた後にキャラクター変更ボタンのイベント設定
+document.addEventListener('DOMContentLoaded', function() {
+    const changeCharacterBtn = document.getElementById('change-character-btn');
+    if (changeCharacterBtn) {
+        changeCharacterBtn.addEventListener('click', () => {
+            characterManager.showCharacterSelector();
+        });
+    }
+});
+
+// === 修正されたイベント設定 ===
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 DOM読み込み完了 - イベント設定開始');
     
-    // 既存ボタンの確認
+    // 既存ボタン（character-select-btn）の修正
     const oldBtn = document.querySelector('.character-select-btn');
     if (oldBtn) {
         console.log('✅ 既存ボタン発見:', oldBtn);
+        oldBtn.onclick = function() {
+            console.log('🎯 既存ボタンクリック！');
+            if (window.characterManager) {
+                characterManager.showCharacterSelector();
+            } else {
+                console.error('❌ characterManagerが見つかりません');
+            }
+        };
         console.log('✅ 既存ボタンのイベント設定完了');
     }
     
-    // characterManagerをグローバルに設定
-    window.characterManager = characterManager;
-    console.log('✅ characterManagerをwindowオブジェクトに設定完了');
+    // 新規ボタン（change-character-btn）の修正
+    const newBtn = document.getElementById('change-character-btn');
+    if (newBtn) {
+        console.log('✅ 新規ボタン発見:', newBtn);
+        newBtn.onclick = function() {
+            console.log('🎯 新規ボタンクリック！');
+            if (window.characterManager) {
+                characterManager.showCharacterSelector();
+            } else {
+                console.error('❌ characterManagerが見つかりません');
+            }
+        };
+        console.log('✅ 新規ボタンのイベント設定完了');
+    }
     
+    // デバッグ用：characterManagerの存在確認
     setTimeout(() => {
         if (window.characterManager) {
             console.log('✅ characterManager正常に利用可能');
@@ -228,4 +217,15 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('❌ characterManagerが見つかりません - 初期化に問題があります');
         }
     }, 2000);
+});
+
+// グローバルスコープに確実に設定
+window.addEventListener('load', function() {
+    console.log('🌐 Window load完了');
+    
+    // characterManagerをグローバルに確実に設定
+    if (typeof characterManager !== 'undefined') {
+        window.characterManager = characterManager;
+        console.log('✅ characterManagerをwindowオブジェクトに設定完了');
+    }
 });

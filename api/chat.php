@@ -19,12 +19,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 ob_start();
 
 try {
-    // 設定ファイル（環境別）
-    if (file_exists('config_local.php') && ($_SERVER['HTTP_HOST'] === 'localhost:8000' || $_SERVER['HTTP_HOST'] === '127.0.0.1:8000')) {
-        require_once 'config_local.php';
-    } else {
-        require_once 'config.php';
-    }
+    // 設定ファイル
+    require_once 'config.php';
     
     class ChatAPI {
         private $apiKey;
