@@ -127,7 +127,7 @@ class GameSystem {
 
     // 必要経験値計算
     getRequiredExp(level) {
-        return level * 30 + 20; // レベル1で50、レベル2で80...
+        return level * 20 + 15; // レベル1で35、レベル2で55... (より簡単)
     }
 
     // 親密度更新
