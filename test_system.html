@@ -460,13 +460,22 @@
             const input = document.getElementById('testMessage');
             const message = input.value.trim();
             
-            if (!message || !gameEngine) return;
+            if (!message || !gameEngine) {
+                addLog('❌ メッセージまたはゲームエンジンが無効です');
+                return;
+            }
             
             try {
                 addLog(`💬 送信: ${message}`);
                 
                 // メモリマネージャーに記録
                 gameEngine.modules.memorymanager.addConversation(message, true, currentCharacterId);
+                
+                // RelationshipManagerの存在確認
+                if (!gameEngine.modules.relationshipmanager) {
+                    addLog('❌ RelationshipManagerが初期化されていません', 'error');
+                    return;
+                }
                 
                 // 関係性更新
                 const result = gameEngine.modules.relationshipmanager.updateIntimacyFromConversation(currentCharacterId, message);
@@ -484,6 +493,7 @@
                 
             } catch (error) {
                 addLog(`❌ メッセージ送信エラー: ${error.message}`, 'error');
+                console.error('詳細エラー:', error);
             }
         }
 
@@ -567,10 +577,27 @@
         // デバッグ情報
         function debugSystem() {
             if (gameEngine) {
+                console.log('🐛 GameEngine Debug:');
+                console.log('-', gameEngine);
+                console.log('- Modules:', gameEngine.modules);
+                
+                addLog('🐛 デバッグ情報:');
+                addLog(`- GameEngine: ${gameEngine ? '✅' : '❌'}`);
+                addLog(`- SaveManager: ${gameEngine?.modules.savemanager ? '✅' : '❌'}`);
+                addLog(`- MemoryManager: ${gameEngine?.modules.memorymanager ? '✅' : '❌'}`);
+                addLog(`- LocationManager: ${gameEngine?.modules.locationmanager ? '✅' : '❌'}`);
+                addLog(`- RelationshipManager: ${gameEngine?.modules.relationshipmanager ? '✅' : '❌'}`);
+                
+                if (gameEngine.modules.relationshipmanager) {
+                    addLog('- RelationshipManagerメソッド確認:');
+                    addLog(`  - updateIntimacyFromConversation: ${typeof gameEngine.modules.relationshipmanager.updateIntimacyFromConversation}`);
+                }
+                
                 gameEngine.debug();
                 gameEngine.modules.relationshipmanager?.debugRelationshipInfo();
                 gameEngine.modules.locationmanager?.debugLocationInfo();
-                addLog('🐛 デバッグ情報をコンソールに出力');
+            } else {
+                addLog('❌ GameEngineが初期化されていません');
             }
         }
 
