@@ -100,6 +100,33 @@ class RelationshipManager {
     }
 
     /**
+     * 親密度を変更（ストーリーシステム用）
+     */
+    modifyRelationship(characterId, amount) {
+        return this.updateIntimacy(characterId, amount, 'ストーリー選択肢');
+    }
+
+    /**
+     * 親密度を直接設定（テスト用）
+     */
+    setRelationship(characterId, intimacyValue) {
+        this.initializeRelationship(characterId);
+        
+        const relationship = this.relationships[characterId];
+        const oldIntimacy = relationship.intimacy;
+        
+        relationship.intimacy = Math.max(0, intimacyValue);
+        
+        const newLevel = this.getIntimacyLevel(relationship.intimacy);
+        relationship.intimacyName = newLevel.name;
+        
+        this.saveRelationships();
+        console.log(`💕 ${characterId}の親密度設定: ${oldIntimacy} → ${relationship.intimacy}`);
+        
+        return relationship;
+    }
+
+    /**
      * 会話による親密度更新
      */
     updateIntimacyFromConversation(characterId, message) {

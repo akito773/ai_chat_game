@@ -66,6 +66,14 @@ class GameEngine {
     }
 
     /**
+     * モジュールの手動登録
+     */
+    registerModule(name, moduleInstance) {
+        this.modules[name.toLowerCase()] = moduleInstance;
+        console.log(`📦 ${name} モジュール登録完了`);
+    }
+
+    /**
      * モジュールの初期化
      */
     async initializeModule(moduleName) {
