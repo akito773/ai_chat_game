@@ -545,8 +545,11 @@
     <script src="js/modules/location-manager.js"></script>
     <script src="js/modules/relationship-manager.js"></script>
     <script src="js/modules/story-manager.js"></script>
+    <script src="js/modules/story-context-manager.js"></script>
+    <script src="js/modules/contextual-chat-system.js"></script>
     <script src="js/modules/story-ui.js"></script>
     <script src="js/modules/story-ui-extended.js"></script>
+    <script src="js/modules/story-event-recorder.js"></script>
 
     <script>
         // ストーリーUI初期化
@@ -582,22 +585,49 @@
                 // GameEngine初期化
                 gameEngine = new GameEngine();
                 gameEngine.registerModule('storymanager', new StoryManager(gameEngine));
-                gameEngine.registerModule('storycontextmanager', new StoryContextManager(gameEngine));
-                gameEngine.registerModule('contextualchatsystem', new ContextualChatSystem(gameEngine));
+                
+                // Phase 3Bモジュールの安全な登録
+                if (window.StoryContextManager) {
+                    gameEngine.registerModule('storycontextmanager', new StoryContextManager(gameEngine));
+                    console.log('✅ StoryContextManager 登録成功');
+                } else {
+                    console.warn('⚠️ StoryContextManager が見つかりません - スキップ');
+                }
+                
+                if (window.ContextualChatSystem) {
+                    gameEngine.registerModule('contextualchatsystem', new ContextualChatSystem(gameEngine));
+                    console.log('✅ ContextualChatSystem 登録成功');
+                } else {
+                    console.warn('⚠️ ContextualChatSystem が見つかりません - スキップ');
+                }
+                
                 await gameEngine.initialize();
                 
                 // ストーリーUI初期化
                 storyUI = new StoryUI(gameEngine);
                 
-                // 新システム初期化
+                // 新システム初期化（安全な初期化）
                 storyContextManager = gameEngine.modules.storycontextmanager;
                 contextualChatSystem = gameEngine.modules.contextualchatsystem;
                 
                 if (storyContextManager) {
-                    storyContextManager.initialize();
+                    try {
+                        storyContextManager.initialize();
+                        console.log('✅ StoryContextManager 初期化成功');
+                    } catch (error) {
+                        console.warn('⚠️ StoryContextManager 初期化エラー:', error);
+                        storyContextManager = null;
+                    }
                 }
+                
                 if (contextualChatSystem) {
-                    contextualChatSystem.initialize();
+                    try {
+                        contextualChatSystem.initialize();
+                        console.log('✅ ContextualChatSystem 初期化成功');
+                    } catch (error) {
+                        console.warn('⚠️ ContextualChatSystem 初期化エラー:', error);
+                        contextualChatSystem = null;
+                    }
                 }
                 
                 // UI更新
