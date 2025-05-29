@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 3A ストーリーシステム テスト</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .result {
+            background: #f8f9fa;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 3px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .info { color: #17a2b8; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Phase 3A ストーリーシステム テスト</h1>
+        
+        <div class="test-section">
+            <h2>📚 ストーリーデータ読み込みテスト</h2>
+            <button class="test-button" onclick="testStoryDataLoad()">データ読み込み確認</button>
+            <div id="storyDataResult" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>🎮 StoryManager テスト</h2>
+            <button class="test-button" onclick="testStoryManager()">StoryManager 初期化</button>
+            <button class="test-button" onclick="testChapterUnlock()">チャプター解放テスト</button>
+            <button class="test-button" onclick="testChoiceProcessing()">選択肢処理テスト</button>
+            <div id="storyManagerResult" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>🎨 StoryUI テスト</h2>
+            <button class="test-button" onclick="testStoryUI()">StoryUI 初期化</button>
+            <button class="test-button" onclick="openSakuraStory()">さくらちゃんストーリー</button>
+            <button class="test-button" onclick="openMisakiStory()">ミサキストーリー</button>
+            <div id="storyUIResult" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>💾 統合システムテスト</h2>
+            <button class="test-button" onclick="testFullIntegration()">フル統合テスト</button>
+            <button class="test-button" onclick="testWithRelationship()">親密度連動テスト</button>
+            <div id="integrationResult" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 システム状況</h2>
+            <button class="test-button" onclick="showSystemStatus()">現在のシステム状況</button>
+            <div id="systemStatus" class="result"></div>
+        </div>
+    </div>
+
+    <!-- JavaScript読み込み -->
+    <script src="js/data/characters.js"></script>
+    <script src="js/data/stories.js"></script>
+    <script src="js/data/story-sakura.js"></script>
+    <script src="js/data/story-misaki.js"></script>
+    <script src="js/core/game-engine.js"></script>
+    <script src="js/modules/save-manager.js"></script>
+    <script src="js/modules/memory-manager.js"></script>
+    <script src="js/modules/location-manager.js"></script>
+    <script src="js/modules/relationship-manager.js"></script>
+    <script src="js/modules/story-manager.js"></script>
+    <script src="js/modules/story-ui.js"></script>
+    <script src="js/modules/story-ui-extended.js"></script>
+
+    <script>
+        let gameEngine = null;
+        let storyManager = null;
+        let storyUI = null;
+
+        // ログ表示用関数
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const colorClass = type === 'success' ? 'success' : type === 'error' ? 'error' : 'info';
+            element.innerHTML += `<span class="${colorClass}">[${timestamp}] ${message}</span>\n`;
+            element.scrollTop = element.scrollHeight;
+        }
+
+        function clearLog(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+
+        // ストーリーデータ読み込みテスト
+        function testStoryDataLoad() {
+            clearLog('storyDataResult');
+            
+            try {
+                // さくらちゃんデータチェック
+                if (window.StoryData && window.StoryData.sakura) {
+                    log('storyDataResult', '✅ さくらちゃんストーリーデータ読み込み成功', 'success');
+                    log('storyDataResult', `   タイトル: ${window.StoryData.sakura.title}`);
+                    log('storyDataResult', `   総チャプター数: ${window.StoryData.sakura.totalChapters}`);
+                    log('storyDataResult', `   エンディング数: ${Object.keys(window.StoryData.sakura.endings).length}`);
+                } else {
+                    log('storyDataResult', '❌ さくらちゃんストーリーデータ読み込み失敗', 'error');
+                }
+
+                // ミサキデータチェック
+                if (window.StoryData && window.StoryData.misaki) {
+                    log('storyDataResult', '✅ ミサキストーリーデータ読み込み成功', 'success');
+                    log('storyDataResult', `   タイトル: ${window.StoryData.misaki.title}`);
+                    log('storyDataResult', `   総チャプター数: ${window.StoryData.misaki.totalChapters}`);
+                    log('storyDataResult', `   エンディング数: ${Object.keys(window.StoryData.misaki.endings).length}`);
+                } else {
+                    log('storyDataResult', '❌ ミサキストーリーデータ読み込み失敗', 'error');
+                }
+
+                // 文字数カウント
+                const sakuraWordCount = JSON.stringify(window.StoryData.sakura).length;
+                const misakiWordCount = JSON.stringify(window.StoryData.misaki).length;
+                log('storyDataResult', `📊 さくらちゃんストーリー: 約${Math.round(sakuraWordCount/1000)}KB`);
+                log('storyDataResult', `📊 ミサキストーリー: 約${Math.round(misakiWordCount/1000)}KB`);
+
+            } catch (error) {
+                log('storyDataResult', `❌ エラー: ${error.message}`, 'error');
+            }
+        }
+
+        // StoryManager テスト
+        async function testStoryManager() {
+            clearLog('storyManagerResult');
+            
+            try {
+                // GameEngine初期化
+                if (!gameEngine) {
+                    gameEngine = new GameEngine();
+                    await gameEngine.initialize();
+                    log('storyManagerResult', '✅ GameEngine初期化完了', 'success');
+                }
+
+                // StoryManager初期化
+                storyManager = new StoryManager(gameEngine);
+                gameEngine.registerModule('storymanager', storyManager);
+                log('storyManagerResult', '✅ StoryManager初期化完了', 'success');
+
+                // さくらちゃんストーリー開始テスト
+                const sakuraStory = storyManager.startStory('sakura');
+                if (sakuraStory) {
+                    log('storyManagerResult', '✅ さくらちゃんストーリー開始成功', 'success');
+                    log('storyManagerResult', `   キャラクター: ${sakuraStory.characterId}`);
+                    log('storyManagerResult', `   タイトル: ${sakuraStory.storyData.title}`);
+                } else {
+                    log('storyManagerResult', '❌ さくらちゃんストーリー開始失敗', 'error');
+                }
+
+            } catch (error) {
+                log('storyManagerResult', `❌ エラー: ${error.message}`, 'error');
+            }
+        }
+
+        // チャプター解放テスト
+        function testChapterUnlock() {
+            if (!storyManager) {
+                log('storyManagerResult', '❌ StoryManagerが初期化されていません', 'error');
+                return;
+            }
+
+            try {
+                log('storyManagerResult', '🔍 チャプター解放状況チェック:');
+                
+                for (let i = 1; i <= 6; i++) {
+                    const isUnlocked = storyManager.isChapterUnlocked('sakura', i);
+                    const chapter = window.StoryData.sakura.chapters[i];
+                    const condition = chapter?.unlockCondition;
+                    
+                    if (isUnlocked) {
+                        log('storyManagerResult', `   Chapter ${i}: 🔓 解放済み`, 'success');
+                    } else {
+                        log('storyManagerResult', `   Chapter ${i}: 🔒 未解放 (親密度${condition?.intimacy || 0}必要)`);
+                    }
+                }
+
+                // 利用可能チャプター取得
+                const availableChapters = storyManager.getAvailableChapters('sakura');
+                log('storyManagerResult', `📚 利用可能チャプター数: ${availableChapters.length}`, 'info');
+
+            } catch (error) {
+                log('storyManagerResult', `❌ エラー: ${error.message}`, 'error');
+            }
+        }
+
+        // 選択肢処理テスト
+        function testChoiceProcessing() {
+            if (!storyManager) {
+                log('storyManagerResult', '❌ StoryManagerが初期化されていません', 'error');
+                return;
+            }
+
+            try {
+                log('storyManagerResult', '🎯 選択肢処理テスト:');
+                
+                // Chapter 1の最初の選択肢をテスト
+                const result = storyManager.processChoice('sakura', 1, 'encourage_singing');
+                
+                if (result) {
+                    log('storyManagerResult', '✅ 選択肢処理成功', 'success');
+                    log('storyManagerResult', `   選択肢: ${result.choice.text}`);
+                    log('storyManagerResult', `   親密度効果: ${result.choice.effect?.intimacy || 0}`);
+                    log('storyManagerResult', `   フラグ: ${result.choice.effect?.flag || 'なし'}`);
+                } else {
+                    log('storyManagerResult', '❌ 選択肢処理失敗', 'error');
+                }
+
+            } catch (error) {
+                log('storyManagerResult', `❌ エラー: ${error.message}`, 'error');
+            }
+        }
+
+        // StoryUI テスト
+        async function testStoryUI() {
+            clearLog('storyUIResult');
+            
+            try {
+                // 前提条件チェック
+                if (!gameEngine) {
+                    gameEngine = new GameEngine();
+                    gameEngine.registerModule('storymanager', new StoryManager(gameEngine));
+                    await gameEngine.initialize();
+                    log('storyUIResult', '✅ GameEngine初期化完了', 'success');
+                }
+
+                // StoryUI初期化
+                storyUI = new StoryUI(gameEngine);
+                log('storyUIResult', '✅ StoryUI初期化完了', 'success');
+
+                // モーダルDOM確認
+                const storyModal = document.getElementById('story-modal');
+                if (storyModal) {
+                    log('storyUIResult', '✅ ストーリーモーダル要素確認', 'success');
+                } else {
+                    log('storyUIResult', '⚠️ ストーリーモーダル要素が見つかりません', 'error');
+                }
+
+            } catch (error) {
+                log('storyUIResult', `❌ エラー: ${error.message}`, 'error');
+            }
+        }
+
+        // さくらちゃんストーリー開始
+        function openSakuraStory() {
+            if (!storyUI) {
+                log('storyUIResult', '❌ StoryUIが初期化されていません', 'error');
+                return;
+            }
+
+            try {
+                storyUI.startStory('sakura');
+                log('storyUIResult', '🌸 さくらちゃんストーリー開始', 'success');
+            } catch (error) {
+                log('storyUIResult', `❌ エラー: ${error.message}`, 'error');
+            }
+        }
+
+        // ミサキストーリー開始
+        function openMisakiStory() {
+            if (!storyUI) {
+                log('storyUIResult', '❌ StoryUIが初期化されていません', 'error');
+                return;
+            }
+
+            try {
+                storyUI.startStory('misaki');
+                log('storyUIResult', '📚 ミサキストーリー開始', 'success');
+            } catch (error) {
+                log('storyUIResult', `❌ エラー: ${error.message}`, 'error');
+            }
+        }
+
+        // フル統合テスト
+        async function testFullIntegration() {
+            clearLog('integrationResult');
+            
+            try {
+                log('integrationResult', '🚀 フル統合テスト開始');
+
+                // 1. 全システム初期化
+                if (!gameEngine) {
+                    gameEngine = new GameEngine();
+                    gameEngine.registerModule('storymanager', new StoryManager(gameEngine));
+                    await gameEngine.initialize();
+                }
+
+                if (!storyUI) {
+                    storyUI = new StoryUI(gameEngine);
+                }
+
+                log('integrationResult', '✅ 全システム初期化完了', 'success');
+
+                // 2. ストーリーデータ整合性チェック
+                const sakuraChapterCount = Object.keys(window.StoryData.sakura.chapters).length;
+                const misakiChapterCount = Object.keys(window.StoryData.misaki.chapters).length;
+                
+                log('integrationResult', `📊 さくらちゃん: ${sakuraChapterCount}章`, 'info');
+                log('integrationResult', `📊 ミサキ: ${misakiChapterCount}章`, 'info');
+
+                // 3. 親密度システム連動テスト
+                const relationshipManager = gameEngine.modules.relationshipmanager;
+                if (relationshipManager) {
+                    // 親密度を上げてチャプター解放をテスト
+                    relationshipManager.modifyRelationship('sakura', 50);
+                    const relationship = relationshipManager.getRelationship('sakura');
+                    log('integrationResult', `💕 さくらちゃん親密度: ${relationship.intimacy}`, 'info');
+
+                    const unlockedChapters = gameEngine.modules.storymanager.getAvailableChapters('sakura');
+                    log('integrationResult', `🔓 解放チャプター数: ${unlockedChapters.length}`, 'success');
+                }
+
+                log('integrationResult', '✅ フル統合テスト完了', 'success');
+
+            } catch (error) {
+                log('integrationResult', `❌ エラー: ${error.message}`, 'error');
+            }
+        }
+
+        // 親密度連動テスト
+        function testWithRelationship() {
+            if (!gameEngine || !gameEngine.modules.relationshipmanager || !gameEngine.modules.storymanager) {
+                log('integrationResult', '❌ 必要なモジュールが初期化されていません', 'error');
+                return;
+            }
+
+            try {
+                log('integrationResult', '💕 親密度連動テスト:');
+                
+                const relationshipManager = gameEngine.modules.relationshipmanager;
+                const storyManager = gameEngine.modules.storymanager;
+
+                // 段階的に親密度を上げてチャプター解放をテスト
+                const intimacyLevels = [0, 25, 50, 100, 150, 200];
+                
+                intimacyLevels.forEach(level => {
+                    relationshipManager.setRelationship('sakura', level);
+                    const availableChapters = storyManager.getAvailableChapters('sakura');
+                    log('integrationResult', `   親密度${level}: ${availableChapters.length}章解放`);
+                });
+
+                log('integrationResult', '✅ 親密度連動テスト完了', 'success');
+
+            } catch (error) {
+                log('integrationResult', `❌ エラー: ${error.message}`, 'error');
+            }
+        }
+
+        // システム状況表示
+        function showSystemStatus() {
+            clearLog('systemStatus');
+            
+            try {
+                log('systemStatus', '📊 システム状況:');
+                log('systemStatus', `   GameEngine: ${gameEngine ? '✅ 初期化済み' : '❌ 未初期化'}`);
+                log('systemStatus', `   StoryManager: ${storyManager ? '✅ 初期化済み' : '❌ 未初期化'}`);
+                log('systemStatus', `   StoryUI: ${storyUI ? '✅ 初期化済み' : '❌ 未初期化'}`);
+                
+                if (gameEngine) {
+                    const modules = Object.keys(gameEngine.modules);
+                    log('systemStatus', `   登録モジュール: ${modules.join(', ')}`);
+                }
+
+                // ストーリーデータ状況
+                if (window.StoryData) {
+                    const characters = Object.keys(window.StoryData);
+                    log('systemStatus', `   ストーリーデータ: ${characters.join(', ')}`);
+                }
+
+                // DOM要素確認
+                const storyModal = document.getElementById('story-modal');
+                log('systemStatus', `   ストーリーモーダル: ${storyModal ? '✅ 存在' : '❌ 不存在'}`);
+
+            } catch (error) {
+                log('systemStatus', `❌ エラー: ${error.message}`, 'error');
+            }
+        }
+
+        // ページ読み込み時の初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🧪 Phase 3A テストページ読み込み完了');
+        });
+    </script>
+</body>
+</html>
