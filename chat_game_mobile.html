@@ -582,10 +582,23 @@
                 // GameEngine初期化
                 gameEngine = new GameEngine();
                 gameEngine.registerModule('storymanager', new StoryManager(gameEngine));
+                gameEngine.registerModule('storycontextmanager', new StoryContextManager(gameEngine));
+                gameEngine.registerModule('contextualchatsystem', new ContextualChatSystem(gameEngine));
                 await gameEngine.initialize();
                 
                 // ストーリーUI初期化
                 storyUI = new StoryUI(gameEngine);
+                
+                // 新システム初期化
+                storyContextManager = gameEngine.modules.storycontextmanager;
+                contextualChatSystem = gameEngine.modules.contextualchatsystem;
+                
+                if (storyContextManager) {
+                    storyContextManager.initialize();
+                }
+                if (contextualChatSystem) {
+                    contextualChatSystem.initialize();
+                }
                 
                 // UI更新
                 updateUI();
@@ -754,6 +767,19 @@
 
         // 簡易AI応答生成
         function generateAIResponse(userMessage) {
+            // 新しいコンテキスト対応システムを使用
+            if (contextualChatSystem) {
+                try {
+                    const contextualResponse = contextualChatSystem.generateContextualResponse(currentCharacterId, userMessage);
+                    if (contextualResponse && contextualResponse.length > 10) {
+                        return contextualResponse;
+                    }
+                } catch (error) {
+                    console.warn('⚠️ コンテキスト応答生成エラー:', error);
+                }
+            }
+            
+            // フォールバック: 従来の応答システム
             const character = window.CharacterData[currentCharacterId];
             const responses = {
                 sakura: [

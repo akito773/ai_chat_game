@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 3B ストーリー・チャット統合テスト</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .test-container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .test-section { margin-bottom: 30px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .test-button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        .test-button:hover { background: #0056b3; }
+        .result { background: #f8f9fa; padding: 10px; margin-top: 10px; border-radius: 3px; font-family: monospace; white-space: pre-wrap; max-height: 300px; overflow-y: auto; }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .info { color: #17a2b8; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🚀 Phase 3B ストーリー・チャット統合テスト</h1>
+        
+        <div class="test-section">
+            <h2>📖 ストーリーコンテキストシステム</h2>
+            <button class="test-button" onclick="testStoryContext()">コンテキスト取得テスト</button>
+            <div id="contextResult" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>💬 コンテキスト対応チャットシステム</h2>
+            <button class="test-button" onclick="testContextualChat()">コンテキスト応答テスト</button>
+            <div id="chatResult" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 システム統合テスト</h2>
+            <button class="test-button" onclick="testFullIntegration()">フル統合テスト</button>
+            <div id="integrationResult" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔍 デバッグツール</h2>
+            <button class="test-button" onclick="debugAllSystems()">全システム状況</button>
+            <div id="debugResult" class="result"></div>
+        </div>
+    </div>
+
+    <script src="js/data/characters.js"></script>
+    <script src="js/data/stories.js"></script>
+    <script src="js/data/story-sakura.js"></script>
+    <script src="js/data/story-misaki.js"></script>
+    <script src="js/core/game-engine.js"></script>
+    <script src="js/modules/save-manager.js"></script>
+    <script src="js/modules/memory-manager.js"></script>
+    <script src="js/modules/location-manager.js"></script>
+    <script src="js/modules/relationship-manager.js"></script>
+    <script src="js/modules/story-manager.js"></script>
+    <script src="js/modules/story-context-manager.js"></script>
+    <script src="js/modules/contextual-chat-system.js"></script>
+    <script src="js/modules/story-ui.js"></script>
+    <script src="js/modules/story-ui-extended.js"></script>
+    <script src="js/modules/story-event-recorder.js"></script>
+
+    <script>
+        let gameEngine = null;
+        let storyContextManager = null;
+        let contextualChatSystem = null;
+
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const colorClass = type === 'success' ? 'success' : type === 'error' ? 'error' : 'info';
+            element.innerHTML += `<span class="${colorClass}">[${timestamp}] ${message}</span>\n`;
+            element.scrollTop = element.scrollHeight;
+        }
+
+        function clearLog(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+
+        async function initialize() {
+            try {
+                gameEngine = new GameEngine();
+                gameEngine.registerModule('storymanager', new StoryManager(gameEngine));
+                gameEngine.registerModule('storycontextmanager', new StoryContextManager(gameEngine));
+                gameEngine.registerModule('contextualchatsystem', new ContextualChatSystem(gameEngine));
+                await gameEngine.initialize();
+                
+                storyContextManager = gameEngine.modules.storycontextmanager;
+                contextualChatSystem = gameEngine.modules.contextualchatsystem;
+                
+                if (storyContextManager) storyContextManager.initialize();
+                if (contextualChatSystem) contextualChatSystem.initialize();
+                
+                console.log('✅ Phase 3B システム初期化完了');
+                return true;
+            } catch (error) {
+                console.error('❌ 初期化エラー:', error);
+                return false;
+            }
+        }
+
+        async function testStoryContext() {
+            clearLog('contextResult');
+            if (!storyContextManager) await initialize();
+            
+            try {
+                log('contextResult', '📖 ストーリーコンテキスト取得テスト開始');
+                
+                const sakuraContext = storyContextManager.getStoryContext('sakura');
+                log('contextResult', `✅ さくらちゃんコンテキスト取得成功`, 'success');
+                log('contextResult', `   親密度: ${sakuraContext.relationshipStatus?.intimacy || 0}`);
+                log('contextResult', `   利用可能チャプター: ${sakuraContext.currentProgress.availableChapters}`);
+                
+                const misakiContext = storyContextManager.getStoryContext('misaki');
+                log('contextResult', `✅ ミサキコンテキスト取得成功`, 'success');
+                log('contextResult', `   親密度: ${misakiContext.relationshipStatus?.intimacy || 0}`);
+                log('contextResult', `   利用可能チャプター: ${misakiContext.currentProgress.availableChapters}`);
+                
+            } catch (error) {
+                log('contextResult', `❌ エラー: ${error.message}`, 'error');
+            }
+        }
+
+        async function testContextualChat() {
+            clearLog('chatResult');
+            if (!contextualChatSystem) await initialize();
+            
+            try {
+                log('chatResult', '💬 コンテキスト対応チャット テスト開始');
+                
+                const testMessages = ['音楽について話しましょう', 'あなたの夢は何ですか？', '本を読むのは好きですか？'];
+                
+                for (const message of testMessages) {
+                    const sakuraResponse = contextualChatSystem.generateContextualResponse('sakura', message);
+                    const misakiResponse = contextualChatSystem.generateContextualResponse('misaki', message);
+                    
+                    log('chatResult', `👤 ユーザー: ${message}`);
+                    log('chatResult', `🌸 さくら: ${sakuraResponse}`, 'success');
+                    log('chatResult', `📚 ミサキ: ${misakiResponse}`, 'info');
+                    log('chatResult', '---');
+                }
+                
+            } catch (error) {
+                log('chatResult', `❌ エラー: ${error.message}`, 'error');
+            }
+        }
+
+        async function testFullIntegration() {
+            clearLog('integrationResult');
+            
+            try {
+                log('integrationResult', '🚀 フル統合テスト開始');
+                
+                const initialized = await initialize();
+                if (!initialized) {
+                    log('integrationResult', '❌ システム初期化失敗', 'error');
+                    return;
+                }
+                log('integrationResult', '✅ システム初期化完了', 'success');
+                
+                // 親密度を上げてストーリー進行をシミュレート
+                const relationshipManager = gameEngine.modules.relationshipmanager;
+                relationshipManager.modifyRelationship('sakura', 50);
+                log('integrationResult', '✅ ストーリー進行シミュレート完了', 'success');
+                
+                // コンテキスト生成
+                const context = storyContextManager.getStoryContext('sakura');
+                log('integrationResult', `✅ コンテキスト生成完了 (親密度: ${context.relationshipStatus?.intimacy})`, 'success');
+                
+                // コンテキスト対応応答
+                const testMessage = '音楽について話しましょう';
+                const response = contextualChatSystem.generateContextualResponse('sakura', testMessage);
+                log('integrationResult', `✅ コンテキスト応答生成完了`, 'success');
+                log('integrationResult', `   応答: ${response}`);
+                
+                log('integrationResult', '🎉 フル統合テスト完了！', 'success');
+                
+            } catch (error) {
+                log('integrationResult', `❌ エラー: ${error.message}`, 'error');
+            }
+        }
+
+        async function debugAllSystems() {
+            clearLog('debugResult');
+            if (!gameEngine) await initialize();
+            
+            try {
+                log('debugResult', '🔍 全システム状況:');
+                log('debugResult', `GameEngine: ${gameEngine ? '✅' : '❌'}`);
+                log('debugResult', `StoryContextManager: ${storyContextManager ? '✅' : '❌'}`);
+                log('debugResult', `ContextualChatSystem: ${contextualChatSystem ? '✅' : '❌'}`);
+                
+                if (gameEngine) {
+                    const modules = Object.keys(gameEngine.modules);
+                    log('debugResult', `登録モジュール: ${modules.join(', ')}`);
+                }
+                
+                if (window.StoryData) {
+                    const characters = Object.keys(window.StoryData);
+                    log('debugResult', `ストーリーデータ: ${characters.join(', ')}`);
+                }
+                
+            } catch (error) {
+                log('debugResult', `❌ エラー: ${error.message}`, 'error');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🧪 Phase 3B テストページ読み込み完了');
+        });
+    </script>
+</body>
+</html>
