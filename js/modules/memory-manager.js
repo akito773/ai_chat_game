@@ -23,6 +23,17 @@ class MemoryManager {
      * 新しい会話を追加
      */
     addConversation(message, isUser, characterId, context = {}) {
+        // データ構造の安全性チェック
+        if (!Array.isArray(this.memoryData.shortTerm)) {
+            this.memoryData.shortTerm = [];
+        }
+        if (!Array.isArray(this.memoryData.longTerm)) {
+            this.memoryData.longTerm = [];
+        }
+        if (!this.memoryData.characterMemories || typeof this.memoryData.characterMemories !== 'object') {
+            this.memoryData.characterMemories = {};
+        }
+        
         const conversation = {
             id: Date.now() + Math.random(),
             message: message,
@@ -407,11 +418,29 @@ class MemoryManager {
         try {
             const saved = localStorage.getItem('chatRPG_memoryData');
             if (saved) {
-                this.memoryData = { ...this.memoryData, ...JSON.parse(saved) };
+                const savedData = JSON.parse(saved);
+                
+                // データ構造の互換性チェックと修正
+                this.memoryData = {
+                    shortTerm: Array.isArray(savedData.shortTerm) ? savedData.shortTerm : [],
+                    longTerm: Array.isArray(savedData.longTerm) ? savedData.longTerm : [],
+                    keywords: savedData.keywords && typeof savedData.keywords === 'object' ? savedData.keywords : {},
+                    importantEvents: Array.isArray(savedData.importantEvents) ? savedData.importantEvents : [],
+                    characterMemories: savedData.characterMemories && typeof savedData.characterMemories === 'object' ? savedData.characterMemories : {}
+                };
+                
                 console.log('🧠 メモリデータ読み込み完了');
             }
         } catch (error) {
             console.error('❌ メモリデータ読み込みエラー:', error);
+            // エラー時は初期化
+            this.memoryData = {
+                shortTerm: [],
+                longTerm: [],
+                keywords: {},
+                importantEvents: [],
+                characterMemories: {}
+            };
         }
     }
 

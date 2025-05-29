@@ -476,7 +476,8 @@
 
         <!-- メイン表示エリア -->
         <div class="main-display">
-            <img class="background-image" id="backgroundImage" src="assets/backgrounds/room_placeholder.jpg" alt="背景">
+            <img class="background-image" id="backgroundImage" src="assets/backgrounds/room.jpg" alt="背景" 
+                 onerror="this.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'; this.style.display='none';">
             <div class="character-display">
                 <img class="character-image" id="characterImage" src="assets/images/sakura.png" alt="キャラクター" 
                      onerror="this.style.display='none'; document.getElementById('characterPlaceholder').style.display='flex';">
@@ -581,6 +582,20 @@
         async function initializeGame() {
             try {
                 console.log('🚀 ゲーム初期化開始');
+                
+                // 旧いメモリデータをクリア（互換性のため）
+                if (localStorage.getItem('chatRPG_memoryData')) {
+                    try {
+                        const saved = JSON.parse(localStorage.getItem('chatRPG_memoryData'));
+                        if (!Array.isArray(saved.shortTerm)) {
+                            console.log('🧠 旧いメモリデータをクリアします');
+                            localStorage.removeItem('chatRPG_memoryData');
+                        }
+                    } catch (e) {
+                        console.log('🧠 破損したメモリデータをクリアします');
+                        localStorage.removeItem('chatRPG_memoryData');
+                    }
+                }
                 
                 // GameEngine初期化
                 gameEngine = new GameEngine();
@@ -862,7 +877,40 @@
         }
 
         function showMenuModal() {
-            showModal('<h2>メニュー</h2><p>設定メニューは実装中です...</p><button onclick="closeModal()">閉じる</button>');
+            const menuContent = `
+                <h2>メニュー</h2>
+                <div style="display: flex; flex-direction: column; gap: 10px; margin: 20px 0;">
+                    <button onclick="clearMemoryData()" style="padding: 10px; background: #ff6b9d; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        🧠 メモリデータをクリア
+                    </button>
+                    <button onclick="debugGameState()" style="padding: 10px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        🔍 ゲーム状態を表示
+                    </button>
+                    <button onclick="closeModal()" style="padding: 10px; background: #999; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        閉じる
+                    </button>
+                </div>
+            `;
+            showModal(menuContent);
+        }
+
+        // メモリデータクリア
+        function clearMemoryData() {
+            if (confirm('メモリデータをクリアしますか？（会話履歴が消えます）')) {
+                localStorage.removeItem('chatRPG_memoryData');
+                localStorage.removeItem('chatRPG_gameData');
+                alert('メモリデータをクリアしました。ページを再読み込みしてください。');
+                location.reload();
+            }
+        }
+
+        // ゲーム状態デバッグ
+        function debugGameState() {
+            if (gameEngine) {
+                gameEngine.debug();
+                console.log('🔍 ゲーム状態をコンソールに出力しました');
+            }
+            alert('ゲーム状態をコンソールに出力しました。F12でコンソールを開いて確認してください。');
         }
 
         // エラー表示

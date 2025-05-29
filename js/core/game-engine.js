@@ -47,7 +47,9 @@ class GameEngine {
             await this.initializeModule('LocationManager');
             await this.initializeModule('RelationshipManager');
             await this.initializeModule('StoryManager');
-            await this.initializeModule('UIManager');
+            
+            // UIManagerは現在使用されていないため、コメントアウト
+            // await this.initializeModule('UIManager');
             
             // データの読み込み
             await this.loadGameData();
