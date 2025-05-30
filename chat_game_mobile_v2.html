@@ -53,18 +53,24 @@
         .character-bubble { position: absolute; top: 50px; left: -50px; right: -50px; background: rgba(255,255,255,0.95); color: #333; padding: 20px 25px; border-radius: 25px; border-bottom-left-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); backdrop-filter: blur(20px); transform: translateY(-20px); opacity: 0; transition: all 0.5s ease; z-index: 30; font-size: 16px; line-height: 1.5; text-align: center; }
         .character-bubble.show { transform: translateY(0); opacity: 1; }
         .character-bubble::before { content: ''; position: absolute; bottom: -10px; left: 40px; width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 15px solid rgba(255,255,255,0.95); }
+        /* チャットエリア（初期は非表示） */
         .chat-container { 
-            position: absolute; 
-            bottom: 0; 
+            position: fixed; 
+            bottom: -280px; /* 初期は画面外に隠す */
             left: 0; 
             right: 0; 
-            height: 300px; /* 高さを少し上げる */
+            height: 280px; 
             background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.7) 20%, rgba(0,0,0,0.95) 100%); 
             backdrop-filter: blur(20px); 
-            z-index: 40; 
+            z-index: 1000; /* 最上位 */
             display: flex; 
             flex-direction: column; 
-            padding-bottom: env(safe-area-inset-bottom, 0px); /* iOS Safe Area対応 */
+            transition: bottom 0.3s ease; /* スムーズなアニメーション */
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+        }
+        .chat-container.show {
+            bottom: 0; /* 表示時は画面下部に */
         }
         .chat-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; -webkit-overflow-scrolling: touch; }
         .message { display: flex; animation: messageSlideIn 0.4s ease; }
@@ -116,6 +122,59 @@
         .action-label { font-size: 10px; margin-top: 2px; opacity: 0.9; }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: rgba(255,255,255,0.95); color: #333; border-radius: 25px; padding: 30px; max-width: 90%; max-height: 80%; overflow-y: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.3); backdrop-filter: blur(20px); }
+        
+        /* 下部タッチエリア */
+        .chat-trigger {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(180deg, transparent 0%, rgba(255,107,157,0.3) 50%, rgba(255,107,157,0.6) 100%);
+            backdrop-filter: blur(10px);
+            z-index: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+        .chat-trigger:hover {
+            background: linear-gradient(180deg, transparent 0%, rgba(255,107,157,0.4) 50%, rgba(255,107,157,0.8) 100%);
+        }
+        .chat-trigger-text {
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        .chat-trigger.hide {
+            display: none;
+        }
+        
+        /* チャット閉じるボタン */
+        .chat-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+        .chat-close:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
         @media (max-height: 700px) { 
             .character-container { bottom: 280px; height: 350px; width: 280px; } 
             .chat-container { height: 280px; } 
@@ -181,7 +240,7 @@
     <div class="modal-overlay" id="modalOverlay"><div class="modal-content" id="modalContent"></div></div>
 
     <script>
-        let currentCharacterId = 'sakura', actionPanelVisible = false;
+        let currentCharacterId = 'sakura', actionPanelVisible = false, gameEngine = null;
         const elements = {
             characterName: document.getElementById('characterName'), intimacyHearts: document.getElementById('intimacyHearts'), intimacyText: document.getElementById('intimacyText'), locationDisplay: document.getElementById('locationDisplay'), backgroundLayer: document.getElementById('backgroundLayer'), characterImage: document.getElementById('characterImage'), characterPlaceholder: document.getElementById('characterPlaceholder'), characterBubble: document.getElementById('characterBubble'), chatMessages: document.getElementById('chatMessages'), typingIndicator: document.getElementById('typingIndicator'), messageInput: document.getElementById('messageInput'), sendBtn: document.getElementById('sendBtn'), actionPanel: document.getElementById('actionPanel'), modalOverlay: document.getElementById('modalOverlay'), modalContent: document.getElementById('modalContent')
         };
@@ -190,13 +249,67 @@
         function setBackground(imagePath) { elements.backgroundLayer.style.backgroundImage = `url(${imagePath})`; }
         function changeCharacterExpression(expression) { elements.characterImage.src = `assets/characters/${currentCharacterId}_${expression}.png`; }
         function showCharacterBubble(text, duration = 3000) { elements.characterBubble.innerHTML = text; elements.characterBubble.classList.add('show'); setTimeout(() => elements.characterBubble.classList.remove('show'), duration); }
-        function updateIntimacyDisplay() { const intimacy = 50, intimacyName = '友達', maxHearts = 5, filledHearts = Math.min(Math.floor(intimacy / 40), maxHearts); elements.intimacyHearts.innerHTML = ''; for (let i = 0; i < maxHearts; i++) { const heart = document.createElement('div'); heart.className = `heart ${i < filledHearts ? 'filled' : 'empty'}`; elements.intimacyHearts.appendChild(heart); } elements.intimacyText.textContent = intimacyName; }
+        function updateIntimacyDisplay() { 
+            let intimacy = 50, intimacyName = '友達';
+            if (gameEngine?.modules?.relationshipManager) {
+                const relationship = gameEngine.modules.relationshipManager.getRelationship(currentCharacterId);
+                intimacy = relationship.intimacy;
+                intimacyName = relationship.level;
+            }
+            const maxHearts = 5, filledHearts = Math.min(Math.floor(intimacy / 40), maxHearts); 
+            elements.intimacyHearts.innerHTML = ''; 
+            for (let i = 0; i < maxHearts; i++) { 
+                const heart = document.createElement('div'); 
+                heart.className = `heart ${i < filledHearts ? 'filled' : 'empty'}`; 
+                elements.intimacyHearts.appendChild(heart); 
+            } 
+            elements.intimacyText.textContent = intimacyName; 
+        }
         function addMessage(text, isUser = false) { const messageDiv = document.createElement('div'); messageDiv.className = `message ${isUser ? 'user' : 'ai'}`; const bubbleDiv = document.createElement('div'); bubbleDiv.className = 'message-bubble'; bubbleDiv.innerHTML = text.replace(/\n/g, '<br>'); messageDiv.appendChild(bubbleDiv); elements.chatMessages.appendChild(messageDiv); elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight; }
         function sendMessage() { const message = elements.messageInput.value.trim(); if (!message) return; addMessage(message, true); elements.messageInput.value = ''; elements.typingIndicator.style.display = 'block'; elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight; setTimeout(() => { elements.typingIndicator.style.display = 'none'; const responses = ['わ〜！そうなんですね♪ とっても面白いお話です✨', 'えへへ〜！私もそう思います〜💕', 'きゃー！それってすごく素敵ですね〜♪']; const aiResponse = responses[Math.floor(Math.random() * responses.length)]; addMessage(aiResponse, false); changeCharacterExpression('happy'); showCharacterBubble(aiResponse); setTimeout(() => changeCharacterExpression('normal'), 3000); }, 1000 + Math.random() * 2000); }
         function showModal(content) { elements.modalContent.innerHTML = content; elements.modalOverlay.style.display = 'flex'; }
         function closeModal() { elements.modalOverlay.style.display = 'none'; }
         function showLocationModal() { showModal(`<h2>📍 場所移動</h2><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0;"><button onclick="moveToLocation('home')" style="padding: 15px; background: #ff6b9d; color: white; border: none; border-radius: 10px; cursor: pointer;">🏠 自分の部屋</button><button onclick="moveToLocation('school')" style="padding: 15px; background: #667eea; color: white; border: none; border-radius: 10px; cursor: pointer;">🏫 学校</button><button onclick="moveToLocation('cafe')" style="padding: 15px; background: #51cf66; color: white; border: none; border-radius: 10px; cursor: pointer;">☕ カフェ</button><button onclick="moveToLocation('park')" style="padding: 15px; background: #4dabf7; color: white; border: none; border-radius: 10px; cursor: pointer;">🌳 公園</button></div><button onclick="closeModal()" style="padding: 10px 20px; background: #999; color: white; border: none; border-radius: 5px; cursor: pointer;">閉じる</button>`); }
         function showCharacterModal() { showModal(`<h2>👥 キャラクター変更</h2><div style="display: flex; flex-direction: column; gap: 10px; margin: 20px 0;"><button onclick="changeCharacter('sakura')" style="padding: 15px; background: #ff6b9d; color: white; border: none; border-radius: 10px; cursor: pointer;">🌸 さくらちゃん</button><button onclick="changeCharacter('misaki')" style="padding: 15px; background: #845ef7; color: white; border: none; border-radius: 10px; cursor: pointer;">📚 ミサキちゃん</button><button onclick="changeCharacter('akira')" style="padding: 15px; background: #fd7e14; color: white; border: none; border-radius: 10px; cursor: pointer;">⚡ アキラちゃん</button><button onclick="changeCharacter('yuki')" style="padding: 15px; background: #74c0fc; color: white; border: none; border-radius: 10px; cursor: pointer;">❄️ ユキちゃん</button></div><button onclick="closeModal()" style="padding: 10px 20px; background: #999; color: white; border: none; border-radius: 5px; cursor: pointer;">閉じる</button>`); }
+        function showStoryModal() {
+            if (!gameEngine?.modules?.storyManager) {
+                showModal('<h2>📚 ストーリー</h2><p>ストーリーシステムが初期化されていません...</p><button onclick="closeModal()">閉じる</button>');
+                return;
+            }
+            
+            const storyManager = gameEngine.modules.storyManager;
+            const availableChapters = storyManager.getAvailableChapters('sakura');
+            
+            let modalContent = '<h2>📚 さくらちゃんの物語</h2>';
+            modalContent += '<div style="display: flex; flex-direction: column; gap: 10px; margin: 20px 0;">';
+            
+            if (availableChapters.length === 0) {
+                modalContent += '<p>現在利用可能なチャプターはありません。</p>';
+            } else {
+                availableChapters.forEach(chapter => {
+                    modalContent += `<button onclick="startStoryChapter('sakura', ${chapter.id})" style="padding: 15px; background: #ff6b9d; color: white; border: none; border-radius: 10px; cursor: pointer; text-align: left;">Chapter ${chapter.id}: ${chapter.title}</button>`;
+                });
+            }
+            
+            modalContent += '<button onclick="closeModal()" style="padding: 10px 20px; background: #999; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 15px;">閉じる</button>';
+            modalContent += '</div>';
+            
+            showModal(modalContent);
+        }
+        
+        function startStoryChapter(characterId, chapterId) {
+            if (!gameEngine?.modules?.storyManager) return;
+            
+            try {
+                gameEngine.modules.storyManager.startChapter(characterId, chapterId);
+                closeModal();
+                console.log(`✅ ストーリー Chapter ${chapterId} 開始`);
+            } catch (error) {
+                console.error('❌ ストーリー開始エラー:', error);
+                showModal('<h2>エラー</h2><p>ストーリーを開始できませんでした。</p><button onclick="closeModal()">閉じる</button>');
+            }
+        }
+        
         function showMenuModal() { showModal(`<h2>⚙️ メニュー</h2><div style="display: flex; flex-direction: column; gap: 10px; margin: 20px 0;"><button onclick="testExpressions()" style="padding: 10px; background: #51cf66; color: white; border: none; border-radius: 5px; cursor: pointer;">😊 表情テスト</button><button onclick="testBackgrounds()" style="padding: 10px; background: #4dabf7; color: white; border: none; border-radius: 5px; cursor: pointer;">🖼️ 背景テスト</button><button onclick="closeModal()" style="padding: 10px; background: #999; color: white; border: none; border-radius: 5px; cursor: pointer;">閉じる</button></div>`); }
         function moveToLocation(locationId) { 
             const backgroundMap = { 
@@ -250,16 +363,41 @@
             }, 2000); 
             closeModal(); 
         }
-        function setupEventListeners() { elements.sendBtn.addEventListener('click', sendMessage); elements.messageInput.addEventListener('keypress', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }); document.getElementById('moveBtn').addEventListener('click', showLocationModal); document.getElementById('characterBtn').addEventListener('click', showCharacterModal); document.getElementById('storyBtn').addEventListener('click', () => showModal('<h2>📚 ストーリー</h2><p>ストーリー機能は実装中です...</p><button onclick="closeModal()">閉じる</button>')); document.getElementById('saveBtn').addEventListener('click', () => showModal('<h2>💾 セーブ</h2><p>セーブ機能は実装中です...</p><button onclick="closeModal()">閉じる</button>')); document.getElementById('menuBtn').addEventListener('click', showMenuModal); elements.modalOverlay.addEventListener('click', (e) => { if (e.target === elements.modalOverlay) closeModal(); }); let startX = 0; document.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; }); document.addEventListener('touchend', (e) => { const endX = e.changedTouches[0].clientX, diff = startX - endX; if (Math.abs(diff) > 50) { if (diff > 0 && !actionPanelVisible) toggleActionPanel(); else if (diff < 0 && actionPanelVisible) toggleActionPanel(); } }); }
-        function initialize() { 
-            console.log('🚀 新デザイン初期化開始'); 
-            setBackground('assets/backgrounds/room_morning.png'); 
-            updateIntimacyDisplay(); 
-            setupEventListeners(); 
-            setTimeout(() => showCharacterBubble('こんにちは〜！私、さくらです♪<br>今日はどんなお話をしましょうか？✨'), 1000); 
-            console.log('✅ 新デザイン初期化完了'); 
+        function setupEventListeners() { elements.sendBtn.addEventListener('click', sendMessage); elements.messageInput.addEventListener('keypress', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }); document.getElementById('moveBtn').addEventListener('click', showLocationModal); document.getElementById('characterBtn').addEventListener('click', showCharacterModal); document.getElementById('storyBtn').addEventListener('click', showStoryModal); document.getElementById('saveBtn').addEventListener('click', () => showModal('<h2>💾 セーブ</h2><p>セーブ機能は実装中です...</p><button onclick="closeModal()">閉じる</button>')); document.getElementById('menuBtn').addEventListener('click', showMenuModal); elements.modalOverlay.addEventListener('click', (e) => { if (e.target === elements.modalOverlay) closeModal(); }); let startX = 0; document.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; }); document.addEventListener('touchend', (e) => { const endX = e.changedTouches[0].clientX, diff = startX - endX; if (Math.abs(diff) > 50) { if (diff > 0 && !actionPanelVisible) toggleActionPanel(); else if (diff < 0 && actionPanelVisible) toggleActionPanel(); } }); }
+        async function initialize() { 
+            console.log('🚀 GameEngine統合版 初期化開始'); 
+            try {
+                gameEngine = new GameEngine();
+                await gameEngine.initialize();
+                setBackground('assets/backgrounds/room_morning.png'); 
+                updateIntimacyDisplay(); 
+                setupEventListeners(); 
+                setTimeout(() => showCharacterBubble('こんにちは〜！私、さくらです♪<br>今日はどんなお話をしましょうか？✨'), 1000); 
+                console.log('✅ GameEngine統合版 初期化完了'); 
+            } catch (error) {
+                console.error('❌ 初期化エラー:', error);
+                // フォールバック：従来のモック動作
+                setBackground('assets/backgrounds/room_morning.png'); 
+                updateIntimacyDisplay(); 
+                setupEventListeners(); 
+                setTimeout(() => showCharacterBubble('こんにちは〜！私、さくらです♪<br>今日はどんなお話をしましょうか？✨'), 1000); 
+                console.log('⚠️ フォールバックモードで動作中'); 
+            }
         }
         document.addEventListener('DOMContentLoaded', initialize);
     </script>
+    
+    <!-- GameEngine統合 -->
+    <script src="js/core/game-engine.js"></script>
+    <script src="js/modules/memory-manager.js"></script>
+    <script src="js/modules/save-manager.js"></script>
+    <script src="js/modules/location-manager.js"></script>
+    <script src="js/modules/relationship-manager.js"></script>
+    <script src="js/modules/story-manager.js"></script>
+    <script src="js/modules/story-context-manager.js"></script>
+    <script src="js/modules/contextual-chat-system.js"></script>
+    <script src="js/data/characters.js"></script>
+    <script src="js/data/stories.js"></script>
+    <script src="js/data/story-sakura.js"></script>
 </body>
 </html>
