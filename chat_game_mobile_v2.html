@@ -303,12 +303,92 @@
             if (!gameEngine?.modules?.storymanager) return;
             
             try {
-                gameEngine.modules.storymanager.startChapter(characterId, chapterId);
+                // ストーリー開始
+                const story = gameEngine.modules.storymanager.startStory(characterId);
+                if (!story) {
+                    throw new Error('ストーリーを開始できませんでした');
+                }
+                
+                // 指定チャプターを取得
+                const chapter = gameEngine.modules.storymanager.getChapter(characterId, chapterId);
+                if (!chapter) {
+                    throw new Error(`Chapter ${chapterId} を取得できませんでした`);
+                }
+                
+                // ストーリーUIを表示
+                displayStoryChapter(chapter, characterId, chapterId);
                 closeModal();
                 console.log(`✅ ストーリー Chapter ${chapterId} 開始`);
             } catch (error) {
                 console.error('❌ ストーリー開始エラー:', error);
-                showModal('<h2>エラー</h2><p>ストーリーを開始できませんでした。</p><button onclick="closeModal()">閉じる</button>');
+                showModal('<h2>エラー</h2><p>' + error.message + '</p><button onclick="closeModal()">閉じる</button>');
+            }
+        }
+        
+        function displayStoryChapter(chapter, characterId, chapterId) {
+            let storyContent = `<div style="max-width: 100%; max-height: 80vh; overflow-y: auto; padding: 20px;">`;
+            storyContent += `<h2 style="color: #ff6b9d; margin-bottom: 10px;">📚 Chapter ${chapterId}: ${chapter.title}</h2>`;
+            storyContent += `<p style="color: #666; margin-bottom: 20px; font-style: italic;">${chapter.description}</p>`;
+            
+            // ストーリー本文表示
+            if (chapter.content.opening) {
+                storyContent += `<div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; margin: 15px 0; line-height: 1.6;">`;
+                storyContent += chapter.content.opening.replace(/\n/g, '<br><br>');
+                storyContent += `</div>`;
+            }
+            
+            if (chapter.content.scene1) {
+                storyContent += `<div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; margin: 15px 0; line-height: 1.6;">`;
+                storyContent += chapter.content.scene1.replace(/\n/g, '<br><br>');
+                storyContent += `</div>`;
+            }
+            
+            // 選択肢表示
+            if (chapter.content.choices && chapter.content.choices.length > 0) {
+                storyContent += `<h3 style="color: #ff6b9d; margin: 20px 0 10px 0;">🎯 あなたの選択は？</h3>`;
+                chapter.content.choices.forEach((choice, index) => {
+                    storyContent += `<button onclick="processStoryChoice('${characterId}', ${chapterId}, '${choice.id}')" `;
+                    storyContent += `style="display: block; width: 100%; margin: 10px 0; padding: 15px; background: #667eea; color: white; border: none; border-radius: 10px; cursor: pointer; text-align: left; line-height: 1.4;">`;
+                    storyContent += `${index + 1}. ${choice.text}`;
+                    storyContent += `</button>`;
+                });
+            }
+            
+            storyContent += `<button onclick="closeModal()" style="margin-top: 20px; padding: 10px 20px; background: #999; color: white; border: none; border-radius: 5px; cursor: pointer;">閉じる</button>`;
+            storyContent += `</div>`;
+            
+            showModal(storyContent);
+        }
+        
+        function processStoryChoice(characterId, chapterId, choiceId) {
+            if (!gameEngine?.modules?.storymanager) return;
+            
+            try {
+                const result = gameEngine.modules.storymanager.processChoice(characterId, chapterId, choiceId);
+                if (!result) {
+                    throw new Error('選択肢を処理できませんでした');
+                }
+                
+                // 選択結果を表示
+                let responseContent = `<div style="max-width: 100%; max-height: 80vh; overflow-y: auto; padding: 20px;">`;
+                responseContent += `<h2 style="color: #ff6b9d;">💬 さくらちゃんの反応</h2>`;
+                responseContent += `<div style="background: rgba(255,107,157,0.1); padding: 20px; border-radius: 15px; margin: 15px 0; line-height: 1.6;">`;
+                responseContent += result.response.replace(/\n/g, '<br><br>');
+                responseContent += `</div>`;
+                
+                // 親密度更新を反映
+                updateIntimacyDisplay();
+                
+                responseContent += `<button onclick="closeModal()" style="margin-top: 20px; padding: 15px 30px; background: #ff6b9d; color: white; border: none; border-radius: 10px; cursor: pointer;">続きを楽しみに✨</button>`;
+                responseContent += `</div>`;
+                
+                showModal(responseContent);
+                
+                console.log(`✅ 選択肢 "${choiceId}" 処理完了`);
+                
+            } catch (error) {
+                console.error('❌ 選択肢処理エラー:', error);
+                showModal('<h2>エラー</h2><p>' + error.message + '</p><button onclick="closeModal()">閉じる</button>');
             }
         }
         
