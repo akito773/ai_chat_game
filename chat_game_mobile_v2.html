@@ -253,8 +253,10 @@
             let intimacy = 50, intimacyName = '友達';
             if (gameEngine?.modules?.relationshipmanager) {
                 const relationship = gameEngine.modules.relationshipmanager.getRelationship(currentCharacterId);
-                intimacy = relationship.intimacy;
-                intimacyName = relationship.level;
+                if (relationship) {
+                    intimacy = relationship.intimacy || 50;
+                    intimacyName = relationship.level || '友達';
+                }
             }
             const maxHearts = 5, filledHearts = Math.min(Math.floor(intimacy / 40), maxHearts); 
             elements.intimacyHearts.innerHTML = ''; 
