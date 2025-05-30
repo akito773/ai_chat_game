@@ -251,8 +251,8 @@
         function showCharacterBubble(text, duration = 3000) { elements.characterBubble.innerHTML = text; elements.characterBubble.classList.add('show'); setTimeout(() => elements.characterBubble.classList.remove('show'), duration); }
         function updateIntimacyDisplay() { 
             let intimacy = 50, intimacyName = '友達';
-            if (gameEngine?.modules?.relationshipManager) {
-                const relationship = gameEngine.modules.relationshipManager.getRelationship(currentCharacterId);
+            if (gameEngine?.modules?.relationshipmanager) {
+                const relationship = gameEngine.modules.relationshipmanager.getRelationship(currentCharacterId);
                 intimacy = relationship.intimacy;
                 intimacyName = relationship.level;
             }
@@ -272,12 +272,12 @@
         function showLocationModal() { showModal(`<h2>📍 場所移動</h2><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0;"><button onclick="moveToLocation('home')" style="padding: 15px; background: #ff6b9d; color: white; border: none; border-radius: 10px; cursor: pointer;">🏠 自分の部屋</button><button onclick="moveToLocation('school')" style="padding: 15px; background: #667eea; color: white; border: none; border-radius: 10px; cursor: pointer;">🏫 学校</button><button onclick="moveToLocation('cafe')" style="padding: 15px; background: #51cf66; color: white; border: none; border-radius: 10px; cursor: pointer;">☕ カフェ</button><button onclick="moveToLocation('park')" style="padding: 15px; background: #4dabf7; color: white; border: none; border-radius: 10px; cursor: pointer;">🌳 公園</button></div><button onclick="closeModal()" style="padding: 10px 20px; background: #999; color: white; border: none; border-radius: 5px; cursor: pointer;">閉じる</button>`); }
         function showCharacterModal() { showModal(`<h2>👥 キャラクター変更</h2><div style="display: flex; flex-direction: column; gap: 10px; margin: 20px 0;"><button onclick="changeCharacter('sakura')" style="padding: 15px; background: #ff6b9d; color: white; border: none; border-radius: 10px; cursor: pointer;">🌸 さくらちゃん</button><button onclick="changeCharacter('misaki')" style="padding: 15px; background: #845ef7; color: white; border: none; border-radius: 10px; cursor: pointer;">📚 ミサキちゃん</button><button onclick="changeCharacter('akira')" style="padding: 15px; background: #fd7e14; color: white; border: none; border-radius: 10px; cursor: pointer;">⚡ アキラちゃん</button><button onclick="changeCharacter('yuki')" style="padding: 15px; background: #74c0fc; color: white; border: none; border-radius: 10px; cursor: pointer;">❄️ ユキちゃん</button></div><button onclick="closeModal()" style="padding: 10px 20px; background: #999; color: white; border: none; border-radius: 5px; cursor: pointer;">閉じる</button>`); }
         function showStoryModal() {
-            if (!gameEngine?.modules?.storyManager) {
+            if (!gameEngine?.modules?.storymanager) {
                 showModal('<h2>📚 ストーリー</h2><p>ストーリーシステムが初期化されていません...</p><button onclick="closeModal()">閉じる</button>');
                 return;
             }
             
-            const storyManager = gameEngine.modules.storyManager;
+            const storyManager = gameEngine.modules.storymanager;
             const availableChapters = storyManager.getAvailableChapters('sakura');
             
             let modalContent = '<h2>📚 さくらちゃんの物語</h2>';
@@ -298,10 +298,10 @@
         }
         
         function startStoryChapter(characterId, chapterId) {
-            if (!gameEngine?.modules?.storyManager) return;
+            if (!gameEngine?.modules?.storymanager) return;
             
             try {
-                gameEngine.modules.storyManager.startChapter(characterId, chapterId);
+                gameEngine.modules.storymanager.startChapter(characterId, chapterId);
                 closeModal();
                 console.log(`✅ ストーリー Chapter ${chapterId} 開始`);
             } catch (error) {
